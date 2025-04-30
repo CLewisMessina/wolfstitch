@@ -1,0 +1,45 @@
+# ========================
+# Python / Wolfscribe
+# ========================
+
+# Bytecode + cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Editor settings
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# User-generated exports
+*.csv
+*.txt
+*.json
+*.jsonl
+
+# Tokenizer/model downloads (if added later)
+*.bin
+*.pt
+*.safetensors
+tokenizer_config.json
+config.json
+special_tokens_map.json

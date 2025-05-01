@@ -6,6 +6,7 @@ from ttkbootstrap import Frame, Label, Button, Entry, Combobox
 from ttkbootstrap.constants import *
 from controller import process_book, get_token_count
 from export.dataset_exporter import save_as_txt, save_as_csv
+from tkinterdnd2 import DND_FILES  # Add this line
 
 TOKEN_LIMIT = 512  # Adjust if needed
 
@@ -22,6 +23,10 @@ class AppFrame(Frame):
 
         file_btn = Button(self, text="Select File", command=self.select_file)
         file_btn.pack(fill=X, pady=(0, 10))
+
+        # Enable drag-and-drop on the whole frame
+        self.drop_target_register(DND_FILES)
+        self.dnd_bind('<<Drop>>', self.handle_file_drop)
 
         # Split method
         self.split_method = tk.StringVar(value="paragraph")
@@ -57,6 +62,15 @@ class AppFrame(Frame):
             self.file_path = path
             self.file_label.config(text=f"📂 {os.path.basename(path)}")
             self.chunks = []
+
+    def handle_file_drop(self, event):
+        path = event.data.strip("{}")  # Remove surrounding braces if present
+        if os.path.isfile(path) and path.lower().endswith((".txt", ".pdf", ".epub")):
+            self.file_path = path
+            self.file_label.config(text=f"📂 {os.path.basename(path)}")
+            self.chunks = []
+        else:
+            messagebox.showerror("Invalid File", "Please drop a valid .txt, .pdf, or .epub file.")
 
     def process_text(self):
         if not self.file_path:

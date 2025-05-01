@@ -19,6 +19,7 @@ Built for indie AI developers, educators, and writers, it’s the fastest way to
 
 - 🧠 **Supports EPUB, PDF, and TXT**
 - ✂️ **Smart text chunking** (paragraph, sentence, or custom)
+- 🧲 **Drag-and-drop file loading**
 - 🔍 **Chunk preview with token counts**
 - ⚠️ **Warnings for overlong training chunks (512+ tokens)**
 - 💾 **Export as `.txt` or `.csv`** with fully quoted formatting
@@ -51,7 +52,7 @@ cd wolfscribe
 
 ```bash
 python -m venv venv
-.\venv\Scripts\activate   # or `source venv/bin/activate` on Mac/Linux
+.env\Scriptsctivate   # or `source venv/bin/activate` on Mac/Linux
 ```
 
 ### 3. Install dependencies
@@ -92,11 +93,13 @@ python main.py
   - `beautifulsoup4`
   - `pdfminer.six`
   - `ttkbootstrap`
+  - `tkinterdnd2`
 
 ---
 
 ## 🧭 Roadmap
 
+- [x] Drag-and-drop file loading
 - [ ] Token length visualizer + tokenizer selector
 - [ ] Export as `.jsonl`
 - [ ] Hugging Face integration ("Send to Wolftrain")
@@ -121,12 +124,9 @@ python main.py
 
 ## 🧑‍💻 License
 
-Creative Commons CC BY-NC 4.0 
+Creative Commons CC BY-NC 4.0  
 No cloud. No gatekeeping. Just tools.
 
 ---
 
 _You write the story. Wolfscribe makes it trainable._
-```
-
----

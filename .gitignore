@@ -31,10 +31,11 @@ build/
 *.egg-info/
 
 # User-generated exports
-*.csv
-*.txt
-*.json
-*.jsonl
+exports/
+output/
+*.export.csv
+*.export.txt
+
 
 # Tokenizer/model downloads (if added later)
 *.bin

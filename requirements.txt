@@ -1,0 +1,21 @@
+# ===============================
+# Wolfscribe - Book to Dataset Tool
+# ===============================
+
+# GUI Framework
+ttkbootstrap==1.10.1
+tkinterdnd2>=0.3.0
+Pillow>=10.2.0  # for PNG icon support
+
+# EPUB Parsing
+ebooklib>=0.17.1
+beautifulsoup4>=4.12.3
+
+# PDF Parsing
+pdfminer.six>=20221105
+
+# Tokenization / Model Compatibility
+transformers>=4.39.3
+
+# Optional: Add torch manually if doing anything beyond this app
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121

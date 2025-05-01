@@ -1,0 +1,86 @@
+/*=========== Assets/main.qss ======*/
+/* ========== Typography ========== */
+* {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #1f2937; /* dark gray */
+    background-color: transparent;
+}
+
+/* ========== Panels and Frames ========== */
+QFrame {
+    border: 1px solid #e5e7eb; /* border gray */
+    background-color: #ffffff; /* white */
+    padding: 16px;
+}
+
+QLabel {
+    font-weight: normal;
+}
+
+QLabel.section-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+QLabel.subtle {
+    color: #6b7280; /* light text gray */
+    font-size: 12px;
+}
+
+/* ========== Buttons ========== */
+QPushButton {
+    padding: 8px 16px;
+    border: none;
+    font-weight: 500;
+    height: 36px;
+}
+
+QPushButton.primary {
+    background-color: #dc2626; /* red */
+    color: white;
+}
+
+QPushButton.secondary {
+    background-color: #f3f4f6; /* medium light gray */
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+}
+
+QPushButton:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af; /* disabled gray */
+}
+
+/* ========== Inputs ========== */
+QLineEdit, QTextEdit {
+    border: 1px solid #d1d5db;
+    padding: 8px 12px;
+    background-color: #ffffff;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+QLineEdit:focus, QTextEdit:focus {
+    border-color: #9ca3af;
+}
+
+/* ========== Dropdowns ========== */
+QComboBox {
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    background-color: #ffffff;
+}
+
+/* ========== Scrollbars (Optional Cleanup) ========== */
+QScrollBar:vertical, QScrollBar:horizontal {
+    border: none;
+    background: #f9fafb;
+    width: 8px;
+}
+
+QScrollBar::handle {
+    background: #e5e7eb;
+}

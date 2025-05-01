@@ -4,6 +4,26 @@
 
 ---
 
+### v1.2 – UI Layout Upgrade (2025-04-30)
+This update transforms the interface into a visually structured, icon-enhanced layout using `grid()` for better UX and future scalability.
+
+#### ✨ Added
+- 🖼️ PNG-based icons from the Lucide set
+- 📐 Grid layout for all interface components
+- 🔤 Section headers styled using Arial font with manual font config
+
+#### ✅ Improved
+- No more emoji-only buttons — replaced with compound icon + label buttons
+- Default window size now starts at `700x500` for a tighter, cleaner launch
+- Layout spacing and sectioning aligned to Wolflow’s brand standards
+
+#### 🔧 Internal
+- Removed `.qss` loading (not compatible with Tkinter)
+- Replaced `class_="section-title"` with manual `font=("Arial", 16, "bold")` styling
+- Confirmed compatibility with ttkbootstrap v1.10+
+
+---
+
 ### v1.1 – Drag-and-Drop Release (2025-04-30)
 **This update adds a major UX upgrade:** drag-and-drop file loading!
 

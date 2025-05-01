@@ -3,6 +3,8 @@
 **Convert books into clean, training-ready datasets — with just a few clicks.**  
 Part of the [Wolflow](https://wolflow.ai) ecosystem • Built by [@clewi](https://github.com/clewi)
 
+> Now with a cleaner, icon-driven interface built on Wolflow’s visual system.
+
 ---
 
 ## ✨ What is Wolfscribe?
@@ -19,16 +21,16 @@ Built for indie AI developers, educators, and writers, it’s the fastest way to
 
 - 🧠 **Supports EPUB, PDF, and TXT**
 - ✂️ **Smart text chunking** (paragraph, sentence, or custom)
-- 🧲 **Drag-and-drop file loading**
+- 🮢 **Drag-and-drop file loading**
 - 🔍 **Chunk preview with token counts**
 - ⚠️ **Warnings for overlong training chunks (512+ tokens)**
-- 💾 **Export as `.txt` or `.csv`** with fully quoted formatting
+- 📂 **Export as `.txt` or `.csv`** with fully quoted formatting
 - 🖥️ **Built with Python + Tkinter + ttkbootstrap**
-- 🚫 **No cloud, no tracking — fully local**
+- ❌ **No cloud, no tracking — fully local**
 
 ---
 
-## 🧪 Why Use It?
+## 🥚 Why Use It?
 
 | Use Case | Example |
 |----------|---------|
@@ -52,7 +54,7 @@ cd wolfscribe
 
 ```bash
 python -m venv venv
-.env\Scriptsctivate   # or `source venv/bin/activate` on Mac/Linux
+.\venv\Scripts\activate   # or `source venv/bin/activate` on Mac/Linux
 ```
 
 ### 3. Install dependencies
@@ -97,9 +99,10 @@ python main.py
 
 ---
 
-## 🧭 Roadmap
+## 🗐 Roadmap
 
 - [x] Drag-and-drop file loading
+- [x] Grid layout and structured UI
 - [ ] Token length visualizer + tokenizer selector
 - [ ] Export as `.jsonl`
 - [ ] Hugging Face integration ("Send to Wolftrain")
@@ -114,15 +117,15 @@ python main.py
 
 ---
 
-## 🧩 Part of the Wolflow Ecosystem
+## 🧙‍♂️ Part of the Wolflow Ecosystem
 
-- [🧪 Wolfkit](https://github.com/yourusername/wolfkit) – Test harness for LLM-generated code
+- [🥚 Wolfkit](https://github.com/yourusername/wolfkit) – Test harness for LLM-generated code
 - [🐺 Wolftrain](https://github.com/yourusername/wolftrain) – Local LoRA fine-tuning app
 - [📈 Wolftrack](https://github.com/yourusername/wolftrack) – Token usage + metrics tracker *(coming soon)*
 
 ---
 
-## 🧑‍💻 License
+## 🤖 License
 
 Creative Commons CC BY-NC 4.0  
 No cloud. No gatekeeping. Just tools.

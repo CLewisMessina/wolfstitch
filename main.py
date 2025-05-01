@@ -12,8 +12,9 @@ def main():
     style.master = root  # Link ttkbootstrap theme to the root window
 
     root.title("Wolfscribe")
-    root.geometry("900x600")
+    root.geometry("700x500")
     root.minsize(700, 500)
+
 
     # Set app icon if available
     try:

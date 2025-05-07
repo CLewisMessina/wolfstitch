@@ -5,18 +5,19 @@ from tkinter import filedialog, messagebox, Text, Toplevel, PhotoImage
 from ttkbootstrap import Frame, Label, Button, Entry, Combobox
 from ttkbootstrap.constants import *
 from controller import process_book, get_token_count
-from session import Session
 from export.dataset_exporter import save_as_txt, save_as_csv
 from tkinterdnd2 import DND_FILES
+import json
+from session import Session
 
 TOKEN_LIMIT = 512
 
 class AppFrame(Frame):
     def __init__(self, parent):
         super().__init__(parent, padding=24)
-        self.session = Session()
         self.file_path = None
         self.chunks = []
+        self.session = Session()
 
         self.icon = lambda name: PhotoImage(file=f"assets/icons/{name}")
         self.icons = {
@@ -81,6 +82,17 @@ class AppFrame(Frame):
         export_csv_btn = Button(self, image=self.icons["export_csv"], text=" Export as .csv", compound="left", command=self.export_csv, bootstyle="secondary")
         export_csv_btn.grid(row=12, column=0, sticky="ew")
 
+        # === Session Section ===
+        lbl = Label(self, text="Session Management")
+        lbl.configure(font=("Arial", 16, "bold"))
+        lbl.grid(row=13, column=0, sticky="w", pady=(16, 0))
+
+        save_btn = Button(self, text="💾 Save Session", command=self.save_session, bootstyle="info")
+        save_btn.grid(row=14, column=0, sticky="ew", pady=(0, 8))
+
+        load_btn = Button(self, text="📂 Load Session", command=self.load_session, bootstyle="warning")
+        load_btn.grid(row=15, column=0, sticky="ew", pady=(0, 8))
+
         self.columnconfigure(0, weight=1)
 
     def select_file(self):
@@ -114,7 +126,6 @@ class AppFrame(Frame):
             self.chunks = process_book(self.file_path, clean_opts, method, delimiter)
             too_long = sum(1 for c in self.chunks if get_token_count(c) > TOKEN_LIMIT)
 
-            # Store chunks in the session
             for f in self.session.files:
                 if f.path == self.file_path:
                     f.chunks = self.chunks
@@ -165,3 +176,31 @@ class AppFrame(Frame):
         if path:
             save_as_csv(self.chunks, path)
             messagebox.showinfo("Saved", f"Dataset saved to {path}")
+
+    def save_session(self):
+        path = filedialog.asksaveasfilename(defaultextension=".wsession", filetypes=[("Wolfscribe Session", "*.wsession")])
+        if not path:
+            return
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(self.session.to_dict(), f, ensure_ascii=False, indent=2)
+            messagebox.showinfo("Session Saved", f"Session saved to {path}")
+        except Exception as e:
+            messagebox.showerror("Save Error", str(e))
+
+    def load_session(self):
+        path = filedialog.askopenfilename(filetypes=[("Wolfscribe Session", "*.wsession")])
+        if not path:
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            self.session = Session.from_dict(data)
+            if self.session.files:
+                first_file = self.session.files[0]
+                self.file_path = first_file.path
+                self.file_label.config(text=os.path.basename(self.file_path))
+                self.chunks = first_file.chunks
+            messagebox.showinfo("Session Loaded", f"Loaded session from {path}")
+        except Exception as e:
+            messagebox.showerror("Load Error", str(e))

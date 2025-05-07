@@ -26,6 +26,9 @@ Built for indie AI developers, educators, and writers, it’s the fastest way to
 - ⚠️ **Warnings for overlong training chunks (512+ tokens)**
 - 📂 **Export as `.txt` or `.csv`** with fully quoted formatting
 - 🖥️ **Built with Python + Tkinter + ttkbootstrap**
+- 💾 **Session save/load support** (.wsession files)
+- 🖱️ **Mousewheel scrolling + tabbed layout**
+- 🎨 **Red-hover button style** inspired by Wolfkit
 - ❌ **No cloud, no tracking — fully local**
 
 ---
@@ -98,6 +101,13 @@ python main.py
   - `tkinterdnd2`
 
 ---
+
+## ✅ Recently Completed
+
+- [x] Session save/load system
+- [x] Scrollable layout with mouse support
+- [x] Hover-only red button style
+- [x] Custom delimiter toggle logic
 
 ## 🗐 Roadmap
 

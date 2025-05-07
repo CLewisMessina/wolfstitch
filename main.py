@@ -9,6 +9,8 @@ def main():
     # Use TkinterDnD-capable root window
     root = TkinterDnD.Tk()
     style = ttkb.Style(theme="simplex")
+    from ui.styles import apply_hover_style
+    apply_hover_style(style)
     style.master = root  # Link ttkbootstrap theme to the root window
 
     root.title("Wolfscribe")

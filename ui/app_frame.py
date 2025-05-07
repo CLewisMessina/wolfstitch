@@ -14,7 +14,29 @@ TOKEN_LIMIT = 512
 
 class AppFrame(Frame):
     def __init__(self, parent):
-        super().__init__(parent, padding=24)
+        super().__init__(parent)
+
+        self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0)
+        self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+
+        self.scrollable_frame = Frame(self.canvas, padding=(20, 10))
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+
+        self.canvas_frame = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw", width=650)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
+
+        # Enable mousewheel scrolling
+        self.canvas.bind_all("<MouseWheel>", lambda e: self.canvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
+        self.canvas.bind_all("<Button-4>", lambda e: self.canvas.yview_scroll(-1, "units"))
+        self.canvas.bind_all("<Button-5>", lambda e: self.canvas.yview_scroll(1, "units"))
+
         self.file_path = None
         self.chunks = []
         self.session = Session()
@@ -29,74 +51,72 @@ class AppFrame(Frame):
             "split_custom": self.icon("icon-split-custom.png"),
             "preview": self.icon("icon-preview.png"),
             "export_txt": self.icon("icon-export-txt.png"),
-            "export_csv": self.icon("icon-export-csv.png")
+            "export_csv": self.icon("icon-export-csv.png"),
+            "save": self.icon("icon-save.png"),
+            "file_up": self.icon("icon-file-up.png")
         }
 
+        content = self.scrollable_frame
+
         # === File Loader Section ===
-        lbl = Label(self, text="File Loader")
-        lbl.configure(font=("Arial", 16, "bold"))
-        lbl.grid(row=0, column=0, sticky="w")
+        Label(content, text="File Loader", font=("Arial", 16, "bold")).grid(row=0, column=0, sticky="w", padx=10)
 
-        self.file_label = Label(self, text="No file selected", anchor="w")
-        self.file_label.grid(row=1, column=0, sticky="ew", pady=(0, 6))
+        self.file_label = Label(content, text="No file selected", anchor="w")
+        self.file_label.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 6))
 
-        file_btn = Button(self, image=self.icons["file"], text=" Select File", compound="left", command=self.select_file, bootstyle="primary")
-        file_btn.grid(row=2, column=0, sticky="ew", pady=(0, 16))
+        Button(content, image=self.icons["file"], text=" Select File", compound="left",
+               command=self.select_file, style="Hover.TButton").grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 16))
 
         self.drop_target_register(DND_FILES)
         self.dnd_bind('<<Drop>>', self.handle_file_drop)
 
         # === Preprocessing Section ===
-        lbl = Label(self, text="Preprocessing")
-        lbl.configure(font=("Arial", 16, "bold"))
-        lbl.grid(row=3, column=0, sticky="w")
+        Label(content, text="Preprocessing", font=("Arial", 16, "bold")).grid(row=3, column=0, sticky="w", padx=10)
 
-        Label(self, text="Split Method:").grid(row=4, column=0, sticky="w")
+        Label(content, text="Split Method:").grid(row=4, column=0, sticky="w", padx=10)
         self.split_method = tk.StringVar(value="paragraph")
-        self.split_dropdown = Combobox(self, textvariable=self.split_method, values=["paragraph", "sentence", "custom"])
-        self.split_dropdown.grid(row=5, column=0, sticky="ew", pady=(0, 10))
+        self.split_dropdown = Combobox(content, textvariable=self.split_method,
+                                       values=["paragraph", "sentence", "custom"], state="readonly")
+        self.split_dropdown.grid(row=5, column=0, sticky="ew", padx=10, pady=(0, 10))
+        self.split_dropdown.bind("<<ComboboxSelected>>", self.on_split_method_change)
 
-        self.delimiter_entry = Entry(self)
+        self.delimiter_entry = Entry(content)
         self.delimiter_entry.insert(0, "")
-        self.delimiter_entry.grid(row=6, column=0, sticky="ew", pady=(0, 16))
+        self.delimiter_entry.grid(row=6, column=0, sticky="ew", padx=10, pady=(0, 16))
+        self.delimiter_entry.grid_remove()
 
-        process_btn = Button(self, image=self.icons["clean"], text=" Process Text", compound="left", command=self.process_text, bootstyle="success")
-        process_btn.grid(row=7, column=0, sticky="ew", pady=(0, 16))
+        Button(content, image=self.icons["clean"], text=" Process Text", compound="left",
+               command=self.process_text, style="Hover.TButton").grid(row=7, column=0, sticky="ew", padx=10, pady=(0, 16))
 
         # === Preview Section ===
-        lbl = Label(self, text="Preview")
-        lbl.configure(font=("Arial", 16, "bold"))
-        lbl.grid(row=8, column=0, sticky="w")
+        Label(content, text="Preview", font=("Arial", 16, "bold")).grid(row=8, column=0, sticky="w", padx=10)
 
-        preview_btn = Button(self, image=self.icons["preview"], text=" Preview Chunks", compound="left", command=self.preview_chunks, bootstyle="info")
-        preview_btn.grid(row=9, column=0, sticky="ew", pady=(0, 16))
+        Button(content, image=self.icons["preview"], text=" Preview Chunks", compound="left",
+               command=self.preview_chunks, style="Hover.TButton").grid(row=9, column=0, sticky="ew", padx=10, pady=(0, 16))
 
         # === Export Section ===
-        lbl = Label(self, text="Export Dataset")
-        lbl.configure(font=("Arial", 16, "bold"))
-        lbl.grid(row=10, column=0, sticky="w")
+        Label(content, text="Export Dataset", font=("Arial", 16, "bold")).grid(row=10, column=0, sticky="w", padx=10)
 
-        export_txt_btn = Button(self, image=self.icons["export_txt"], text=" Export as .txt", compound="left", command=self.export_txt, bootstyle="secondary")
-        export_txt_btn.grid(row=11, column=0, sticky="ew", pady=(0, 8))
+        Button(content, image=self.icons["export_txt"], text=" Export as .txt", compound="left",
+               command=self.export_txt, style="Hover.TButton").grid(row=11, column=0, sticky="ew", padx=10, pady=(0, 8))
 
-        export_csv_btn = Button(self, image=self.icons["export_csv"], text=" Export as .csv", compound="left", command=self.export_csv, bootstyle="secondary")
-        export_csv_btn.grid(row=12, column=0, sticky="ew")
+        Button(content, image=self.icons["export_csv"], text=" Export as .csv", compound="left",
+               command=self.export_csv, style="Hover.TButton").grid(row=12, column=0, sticky="ew", padx=10)
 
         # === Session Section ===
-        lbl = Label(self, text="Session Management")
-        lbl.configure(font=("Arial", 16, "bold"))
-        lbl.grid(row=13, column=0, sticky="w", pady=(16, 0))
+        Label(content, text="Session Management", font=("Arial", 16, "bold")).grid(row=13, column=0, sticky="w", padx=10, pady=(16, 0))
 
-        save_btn = Button(self, text="💾 Save Session", command=self.save_session, bootstyle="info")
-        save_btn.grid(row=14, column=0, sticky="ew", pady=(0, 8))
+        Button(content, image=self.icons["save"], text=" Save Session", compound="left",
+               command=self.save_session, style="Hover.TButton").grid(row=14, column=0, sticky="ew", padx=10, pady=(0, 8))
 
-        load_btn = Button(self, text="📂 Load Session", command=self.load_session, bootstyle="warning")
-        load_btn.grid(row=15, column=0, sticky="ew", pady=(0, 8))
+        Button(content, image=self.icons["file_up"], text=" Load Session", compound="left",
+               command=self.load_session, style="Hover.TButton").grid(row=15, column=0, sticky="ew", padx=10, pady=(0, 8))
 
-        self.columnconfigure(0, weight=1)
+        content.columnconfigure(0, weight=1)
 
     def select_file(self):
-        path = filedialog.askopenfilename(title="Select Book or Document", filetypes=[("Text or Document Files", "*.txt *.pdf *.epub")])
+        path = filedialog.askopenfilename(title="Select Book or Document",
+                                          filetypes=[("Text or Document Files", "*.txt *.pdf *.epub")])
         if path:
             self.file_path = path
             self.file_label.config(text=os.path.basename(path))
@@ -176,6 +196,14 @@ class AppFrame(Frame):
         if path:
             save_as_csv(self.chunks, path)
             messagebox.showinfo("Saved", f"Dataset saved to {path}")
+
+
+    def on_split_method_change(self, event=None):
+        selected = self.split_method.get()
+        if selected == "custom":
+            self.delimiter_entry.grid()
+        else:
+            self.delimiter_entry.grid_remove()
 
     def save_session(self):
         path = filedialog.asksaveasfilename(defaultextension=".wsession", filetypes=[("Wolfscribe Session", "*.wsession")])

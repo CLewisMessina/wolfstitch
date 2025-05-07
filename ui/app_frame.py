@@ -5,6 +5,7 @@ from tkinter import filedialog, messagebox, Text, Toplevel, PhotoImage
 from ttkbootstrap import Frame, Label, Button, Entry, Combobox
 from ttkbootstrap.constants import *
 from controller import process_book, get_token_count
+from session import Session
 from export.dataset_exporter import save_as_txt, save_as_csv
 from tkinterdnd2 import DND_FILES
 
@@ -13,6 +14,7 @@ TOKEN_LIMIT = 512
 class AppFrame(Frame):
     def __init__(self, parent):
         super().__init__(parent, padding=24)
+        self.session = Session()
         self.file_path = None
         self.chunks = []
 
@@ -87,6 +89,7 @@ class AppFrame(Frame):
             self.file_path = path
             self.file_label.config(text=os.path.basename(path))
             self.chunks = []
+            self.session.add_file(path)
 
     def handle_file_drop(self, event):
         path = event.data.strip("{}")
@@ -94,6 +97,7 @@ class AppFrame(Frame):
             self.file_path = path
             self.file_label.config(text=os.path.basename(path))
             self.chunks = []
+            self.session.add_file(path)
         else:
             messagebox.showerror("Invalid File", "Please drop a valid .txt, .pdf, or .epub file.")
 
@@ -109,6 +113,12 @@ class AppFrame(Frame):
             clean_opts = {"remove_headers": True, "normalize_whitespace": True, "strip_bullets": True}
             self.chunks = process_book(self.file_path, clean_opts, method, delimiter)
             too_long = sum(1 for c in self.chunks if get_token_count(c) > TOKEN_LIMIT)
+
+            # Store chunks in the session
+            for f in self.session.files:
+                if f.path == self.file_path:
+                    f.chunks = self.chunks
+                    break
 
             msg = f"Processed {len(self.chunks)} chunks."
             if too_long > 0:

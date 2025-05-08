@@ -1,7 +1,7 @@
 # 🐺 Wolfscribe
 
 **Convert books into clean, training-ready datasets — with just a few clicks.**  
-Part of the [Wolflow](https://wolflow.ai) ecosystem • Built by [@clewi](https://github.com/clewi)
+Part of the [Wolflow](https://wolflow.ai) ecosystem • Built by [@CLewisMessina](https://github.com/CLewisMessina)
 
 > Now with a cleaner, icon-driven interface built on Wolflow’s visual system.
 
@@ -57,7 +57,7 @@ https://github.com/user-attachments/assets/2596b35e-6202-4c86-91e9-e9df729f6a18
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/yourusername/wolfscribe.git
+git clone https://github.com/CLewisMessina/wolfscribe.git
 cd wolfscribe
 ```
 
@@ -132,9 +132,9 @@ python main.py
 
 ## 🧙‍♂️ Part of the Wolflow Ecosystem
 
-- [🥚 Wolfkit](https://github.com/yourusername/wolfkit) – Test harness for LLM-generated code
-- [🐺 Wolftrain](https://github.com/yourusername/wolftrain) – Local LoRA fine-tuning app
-- [📈 Wolftrack](https://github.com/yourusername/wolftrack) – Token usage + metrics tracker *(coming soon)*
+- [🥚 Wolfkit](https://github.com/CLewisMessina/wolfkit) – Test harness for LLM-generated code
+- [🐺 Wolftrain](https://github.com/CLewisMessina/wolftrain) – Local LoRA fine-tuning app
+- [📈 Wolftrack](https://github.com/CLewisMessina) – Token usage + metrics tracker *(coming soon)*
 
 ---
 

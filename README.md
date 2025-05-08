@@ -121,7 +121,7 @@ python main.py
 
 ---
 
-## 📸 Screenshots
+## 📸 Demo Video (Press Play)
 
 https://github.com/user-attachments/assets/2596b35e-6202-4c86-91e9-e9df729f6a18
 

@@ -17,6 +17,14 @@ Built for indie AI developers, educators, and writers, it’s the fastest way to
 
 ---
 
+## 📸 Demo Video (Press Play)
+
+
+https://github.com/user-attachments/assets/2596b35e-6202-4c86-91e9-e9df729f6a18
+
+
+---
+
 ## 📦 Features
 
 - 🧠 **Supports EPUB, PDF, and TXT**
@@ -121,11 +129,6 @@ python main.py
 
 ---
 
-## 📸 Demo Video (Press Play)
-
-https://github.com/user-attachments/assets/2596b35e-6202-4c86-91e9-e9df729f6a18
-
----
 
 ## 🧙‍♂️ Part of the Wolflow Ecosystem
 

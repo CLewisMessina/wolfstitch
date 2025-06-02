@@ -17,5 +17,18 @@ pdfminer.six>=20221105
 # Tokenization / Model Compatibility
 transformers>=4.39.3
 
+# ===============================
+# PREMIUM TOKENIZER FEATURES
+# ===============================
+
+# OpenAI Tokenizers (GPT-4, GPT-3.5-turbo)
+tiktoken>=0.5.0
+
+# Embedding-based Tokenizers
+sentence-transformers>=2.2.0
+
+# License Management & Security
+pycryptodome>=3.19.0
+
 # Optional: Add torch manually if doing anything beyond this app
 # pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121

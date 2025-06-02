@@ -3,9 +3,10 @@ import logging
 from typing import List, Dict, Any, Tuple, Optional
 from processing.extract import load_file
 from processing.clean import clean_text
-from processing.splitter import split_text
+from processing.splitter import split_text  # Keep existing basic splitter
+# Remove this line: from processing.smart_splitter import SmartSplitter, smart_split_by_tokens
 
-# Import our new premium systems
+# Import our premium systems
 from core.tokenizer_manager import TokenizerManager
 from core.license_manager import LicenseManager
 
@@ -15,8 +16,53 @@ class ProcessingController:
     def __init__(self):
         self.tokenizer_manager = TokenizerManager()
         self.license_manager = LicenseManager()
+        # Remove this line: self.smart_splitter = SmartSplitter(self.tokenizer_manager)
         logging.info("ProcessingController initialized with premium tokenizer support")
 
+    def process_book(self, path: str, clean_opts: Dict[str, Any], split_method: str, 
+                    delimiter: str = None, tokenizer_name: str = 'gpt2', 
+                    use_smart_splitting: bool = None, max_tokens: int = 512) -> List[str]:
+        """
+        Enhanced book processing (smart splitting disabled for now)
+        
+        Args:
+            path: File path to process
+            clean_opts: Cleaning options dictionary
+            split_method: Splitting method ('paragraph', 'sentence', 'custom')
+            delimiter: Custom delimiter if split_method is 'custom'
+            tokenizer_name: Tokenizer to use for processing
+            use_smart_splitting: Whether to use smart splitting (disabled for now)
+            max_tokens: Maximum tokens per chunk for smart splitting
+            
+        Returns:
+            List of text chunks
+        """
+        # Validate tokenizer access
+        if not self.license_manager.check_tokenizer_access(tokenizer_name):
+            logging.warning(f"Access denied to tokenizer {tokenizer_name}, falling back to gpt2")
+            tokenizer_name = 'gpt2'
+        
+        # Load and clean text
+        raw = load_file(path)
+        cleaned = clean_text(raw, **clean_opts)
+        
+        # Use basic splitting for now (smart splitting will be added later)
+        chunks = split_text(cleaned, split_method, delimiter)
+        
+        logging.info(f"Processed {path}: {len(chunks)} chunks created using basic {split_method} splitting")
+        return chunks
+
+    def get_smart_splitting_status(self) -> Dict[str, Any]:
+        """Get smart splitting status for UI info display"""
+        has_smart_access = self.license_manager.check_feature_access('smart_chunking')
+        
+        return {
+            'available': False,  # Disabled for now
+            'description': 'Smart chunking will be available in a future update',
+            'upgrade_message': 'Coming soon - automatic token optimization for premium users'
+        }
+
+    # Keep all the existing methods from the original controller unchanged
     def get_available_tokenizers(self) -> List[Dict[str, Any]]:
         """Get list of available tokenizers with licensing info"""
         tokenizers = []
@@ -57,48 +103,8 @@ class ProcessingController:
         # Default to GPT-2
         return 'gpt2'
 
-    def process_book(self, path: str, clean_opts: Dict[str, Any], split_method: str, 
-                    delimiter: str = None, tokenizer_name: str = 'gpt2') -> List[str]:
-        """
-        Enhanced book processing with tokenizer selection
-        
-        Args:
-            path: File path to process
-            clean_opts: Cleaning options dictionary
-            split_method: Splitting method ('paragraph', 'sentence', 'custom')
-            delimiter: Custom delimiter if split_method is 'custom'
-            tokenizer_name: Tokenizer to use for processing
-            
-        Returns:
-            List of text chunks
-        """
-        # Validate tokenizer access
-        if not self.license_manager.check_tokenizer_access(tokenizer_name):
-            logging.warning(f"Access denied to tokenizer {tokenizer_name}, falling back to gpt2")
-            tokenizer_name = 'gpt2'
-        
-        # Load and clean text
-        raw = load_file(path)
-        cleaned = clean_text(raw, **clean_opts)
-        
-        # Split text
-        chunks = split_text(cleaned, split_method, delimiter)
-        
-        logging.info(f"Processed {path}: {len(chunks)} chunks created using {tokenizer_name}")
-        return chunks
-
     def get_token_count(self, text: str, tokenizer_name: str = 'gpt2') -> Tuple[int, Dict[str, Any]]:
-        """
-        Enhanced token counting with metadata
-        
-        Args:
-            text: Text to count tokens for
-            tokenizer_name: Tokenizer to use
-            
-        Returns:
-            Tuple of (token_count, metadata)
-            metadata includes accuracy, performance, compatibility info
-        """
+        """Enhanced token counting with metadata"""
         # Check access to tokenizer
         if not self.license_manager.check_tokenizer_access(tokenizer_name):
             # Add access denial to metadata
@@ -115,17 +121,7 @@ class ProcessingController:
 
     def analyze_chunks(self, chunks: List[str], tokenizer_name: str = 'gpt2', 
                       token_limit: int = 512) -> Dict[str, Any]:
-        """
-        Analyze chunks with comprehensive statistics
-        
-        Args:
-            chunks: List of text chunks
-            tokenizer_name: Tokenizer to use for analysis
-            token_limit: Token limit for warnings
-            
-        Returns:
-            Dictionary with comprehensive analysis
-        """
+        """Analyze chunks with comprehensive statistics"""
         if not chunks:
             return {
                 'total_chunks': 0,
@@ -212,7 +208,6 @@ class ProcessingController:
     def _calculate_cost_estimates(self, total_tokens: int, tokenizer_name: str) -> Dict[str, Any]:
         """Calculate training cost estimates (premium feature)"""
         # Rough cost estimates for popular training services
-        # These would be updated regularly in a real implementation
         cost_per_1k_tokens = {
             'gpt2': 0.0,  # Free/open source
             'tiktoken_gpt4': 0.03,  # OpenAI API costs
@@ -237,7 +232,7 @@ class ProcessingController:
         recommendations = []
         
         if efficiency_score < 0.6:
-            recommendations.append("Consider using smart chunking to optimize token distribution")
+            recommendations.append("Consider optimizing chunk sizes for better token distribution")
         
         if analysis['over_limit_percentage'] > 20:
             recommendations.append(f"Reduce chunk size - {analysis['over_limit_percentage']:.1f}% exceed token limit")

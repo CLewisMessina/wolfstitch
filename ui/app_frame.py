@@ -1,4 +1,4 @@
-# ui/app_frame.py
+# ui/app_frame.py - AFTER Checkpoint A2: Analytics Dashboard Extracted
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, Text, Toplevel, PhotoImage
@@ -11,6 +11,9 @@ from tkinterdnd2 import DND_FILES
 import json
 from session import Session
 from datetime import datetime
+
+# Import extracted dialogs
+from ui.dialogs import ChunkPreviewDialog, AnalyticsDashboard
 
 TOKEN_LIMIT = 512
 
@@ -407,11 +410,6 @@ class AppFrame(Frame):
         else:
             messagebox.showerror("Invalid File", "Please drop a valid .txt, .pdf, or .epub file.")
 
-# END OF PART 1
-
-# ui/app_frame.py - Complete Enhanced Version Part 2 (FIXED)
-# Continue from Part 1...
-
     def process_text(self):
         if not self.file_path:
             messagebox.showerror("Missing File", "Please select a file first.")
@@ -460,328 +458,35 @@ class AppFrame(Frame):
             messagebox.showerror("Processing Error", str(e))
 
     def preview_chunks(self):
-        """Enhanced chunk preview with advanced tokenizer information and analytics - FIXED"""
+        """SIMPLIFIED: Use extracted ChunkPreviewDialog"""
         if not self.chunks:
             messagebox.showwarning("No Data", "You must process a file first.")
             return
 
-        # Get current tokenizer and analysis
+        # Get current tokenizer name
         tokenizer_name = getattr(self, '_current_tokenizer_name', 'gpt2')
         
-        # Update analysis if needed
-        if not self.current_analysis:
-            self.update_chunk_analysis()
-        
-        # Create enhanced preview window
-        window = Toplevel()
-        window.title("🔍 Advanced Chunk Preview")
-        window.geometry("900x700")
+        # Create and show the preview dialog
+        preview_dialog = ChunkPreviewDialog(
+            parent=self,
+            chunks=self.chunks,
+            controller=self.controller,
+            tokenizer_name=tokenizer_name,
+            current_analysis=self.current_analysis
+        )
+        preview_dialog.show()
 
-        # Create main container - REMOVED bg parameter for ttkbootstrap compatibility
-        main_container = Frame(window)
-        main_container.pack(fill="both", expand=True, padx=15, pady=15)
-
-        # === HEADER SECTION ===
-        header_frame = Frame(main_container, relief="solid", borderwidth=1)
-        header_frame.pack(fill="x", pady=(0, 15))
-        
-        # Title with tokenizer info
-        title_frame = Frame(header_frame)
-        title_frame.pack(fill="x", padx=20, pady=15)
-        
-        Label(title_frame, text="📊 Advanced Chunk Analysis", 
-              font=("Arial", 16, "bold")).pack(anchor="w")
-        
-        # Tokenizer status line
-        tokenizer_info = self.controller.get_available_tokenizers()
-        current_tokenizer_info = next((t for t in tokenizer_info if t['name'] == tokenizer_name), None)
-        
-        if current_tokenizer_info:
-            accuracy_badge = "🎯 Exact" if current_tokenizer_info['accuracy'] == 'exact' else "📊 Estimated"
-            performance_badge = f"⚡ {current_tokenizer_info['performance'].title()}"
-            premium_badge = "💎 Premium" if current_tokenizer_info['is_premium'] else "🆓 Free"
-            
-            tokenizer_status = f"Tokenizer: {current_tokenizer_info['display_name']} | {accuracy_badge} | {performance_badge} | {premium_badge}"
-        else:
-            tokenizer_status = f"Tokenizer: {tokenizer_name} | Status: Unknown"
-        
-        Label(title_frame, text=tokenizer_status, 
-              font=("Arial", 11)).pack(anchor="w", pady=(5, 0))
-
-        # === ANALYTICS SUMMARY SECTION ===
-        if self.current_analysis:
-            self._create_analytics_summary(main_container, self.current_analysis, tokenizer_name)
-
-        # === COMPATIBILITY WARNING SECTION ===
-        self._create_compatibility_warnings(main_container, tokenizer_name)
-
-        # === CHUNKS PREVIEW SECTION ===
-        preview_frame = Frame(main_container, relief="solid", borderwidth=1)
-        preview_frame.pack(fill="both", expand=True, pady=(15, 0))
-        
-        # Preview header
-        preview_header = Frame(preview_frame)
-        preview_header.pack(fill="x", padx=20, pady=(15, 10))
-        
-        Label(preview_header, text="📋 Chunk Preview (First 10)", 
-              font=("Arial", 14, "bold")).pack(anchor="w")
-        
-        Label(preview_header, text="Color coding: 🟢 Optimal | 🟡 Close to limit | 🔴 Over limit", 
-              font=("Arial", 10)).pack(anchor="w", pady=(5, 0))
-
-        # Scrollable text widget for chunks
-        text_frame = Frame(preview_frame)
-        text_frame.pack(fill="both", expand=True, padx=20, pady=(0, 15))
-        
-        # Use regular tkinter Text widget (not ttkbootstrap) - REMOVED bg parameter
-        text_widget = Text(text_frame, wrap="word", font=("Consolas", 10), relief="flat", bd=0)
-        scrollbar = tk.Scrollbar(text_frame, orient="vertical", command=text_widget.yview)
-        text_widget.configure(yscrollcommand=scrollbar.set)
-        
-        text_widget.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
-        # Add chunks with enhanced formatting
-        self._populate_enhanced_chunks(text_widget, tokenizer_name)
-
-        # === ACTION BUTTONS ===
-        button_frame = Frame(main_container)
-        button_frame.pack(fill="x", pady=(15, 0))
-        
-        # Advanced analytics button (premium feature)
-        if self.controller.license_manager.check_feature_access('advanced_analytics'):
-            analytics_btn = Button(button_frame, text="📊 Advanced Analytics Dashboard", 
-                                  command=self.create_premium_analytics_window,
-                                  style="Hover.TButton")
-            analytics_btn.pack(side="left", padx=(0, 10))
-        else:
-            upgrade_btn = Button(button_frame, text="💎 Upgrade for Advanced Analytics", 
-                               command=lambda: self.show_premium_upgrade_dialog('advanced_analytics'),
-                               style="Hover.TButton")
-            upgrade_btn.pack(side="left", padx=(0, 10))
-        
-        # Tokenizer comparison button (premium feature) 
-        if self.controller.license_manager.check_feature_access('advanced_analytics'):
-            compare_btn = Button(button_frame, text="🔍 Compare Tokenizers", 
-                               command=self.show_tokenizer_comparison,
-                               style="Hover.TButton")
-            compare_btn.pack(side="left", padx=(0, 10))
-        
-        # Close button
-        close_btn = Button(button_frame, text="Close", command=window.destroy)
-        close_btn.pack(side="right")
-
-    def _create_analytics_summary(self, parent, analysis, tokenizer_name):
-        """Create analytics summary panel - FIXED for ttkbootstrap"""
-        analytics_frame = Frame(parent, relief="solid", borderwidth=1)
-        analytics_frame.pack(fill="x", pady=(0, 15))
-        
-        # Header
-        header = Frame(analytics_frame)
-        header.pack(fill="x", padx=20, pady=(15, 10))
-        
-        Label(header, text="📈 Summary Statistics", 
-              font=("Arial", 14, "bold")).pack(anchor="w")
-
-        # Create stats grid
-        stats_container = Frame(analytics_frame)
-        stats_container.pack(fill="x", padx=20, pady=(0, 15))
-        
-        # Basic stats (always available)
-        basic_stats = [
-            ("📊 Total Chunks", f"{analysis['total_chunks']:,}"),
-            ("🔢 Total Tokens", f"{analysis['total_tokens']:,}"),
-            ("📏 Average Tokens", f"{analysis['avg_tokens']}"),
-            ("⚠️ Over Limit", f"{analysis['over_limit']} ({analysis['over_limit_percentage']:.1f}%)")
-        ]
-        
-        # Display basic stats in 2x2 grid using ttkbootstrap Frame - REMOVED bg parameters
-        for i, (label, value) in enumerate(basic_stats):
-            row = i // 2
-            col = i % 2
-            
-            # Use ttkbootstrap Frame without bg parameter
-            stat_frame = Frame(stats_container, relief="solid", borderwidth=1)
-            stat_frame.grid(row=row, column=col, padx=5, pady=5, sticky="ew")
-            
-            Label(stat_frame, text=label, font=("Arial", 10, "bold")).pack(pady=(8, 2))
-            Label(stat_frame, text=value, font=("Arial", 12)).pack(pady=(0, 8))
-        
-        # Configure grid weights
-        stats_container.columnconfigure(0, weight=1)
-        stats_container.columnconfigure(1, weight=1)
-        
-        # Premium stats (if available)
-        if analysis.get('advanced_analytics'):
-            premium_frame = Frame(analytics_frame, relief="solid", borderwidth=1)
-            premium_frame.pack(fill="x", padx=20, pady=(10, 15))
-            
-            Label(premium_frame, text="💎 Premium Analytics", 
-                  font=("Arial", 12, "bold"), foreground="blue").pack(anchor="w", padx=15, pady=(10, 5))
-            
-            premium_stats_text = []
-            
-            if 'efficiency_score' in analysis:
-                premium_stats_text.append(f"🎯 Efficiency Score: {analysis['efficiency_score']}%")
-            
-            if analysis.get('cost_estimates'):
-                cost = analysis['cost_estimates']['estimated_api_cost']
-                premium_stats_text.append(f"💰 Estimated Training Cost: ${cost:.4f}")
-            
-            if analysis.get('token_distribution'):
-                dist = analysis['token_distribution']
-                premium_stats_text.append(f"📊 Distribution: {dist['under_50']} small | {dist['50_200']} medium | {dist['200_400']} large | {dist['over_limit']} oversized")
-            
-            for stat in premium_stats_text:
-                Label(premium_frame, text=stat, font=("Arial", 10)).pack(anchor="w", padx=15, pady=1)
-            
-            # Add padding at bottom
-            Label(premium_frame, text="").pack(pady=5)
-        
-        else:
-            # Show premium preview
-            preview_frame = Frame(analytics_frame, relief="solid", borderwidth=1)
-            preview_frame.pack(fill="x", padx=20, pady=(10, 15))
-            
-            Label(preview_frame, text="💡 Upgrade for Advanced Analytics", 
-                  font=("Arial", 12, "bold"), foreground="orange").pack(anchor="w", padx=15, pady=(10, 5))
-            
-            preview_features = [
-                "🎯 Efficiency scoring and optimization suggestions",
-                "💰 Training cost estimation by provider", 
-                "📊 Detailed token distribution analysis",
-                "🔍 Model compatibility recommendations"
-            ]
-            
-            for feature in preview_features:
-                Label(preview_frame, text=feature, font=("Arial", 10)).pack(anchor="w", padx=15, pady=1)
-            
-            Label(preview_frame, text="").pack(pady=5)
-
-# END OF PART 2
-
-# ui/app_frame.py - Complete Enhanced Version Part 3 (FIXED)
-# Continue from Part 2...
-
-    def _create_compatibility_warnings(self, parent, tokenizer_name):
-        """Create compatibility warnings section - FIXED for ttkbootstrap"""
-        try:
-            # Check for compatibility issues
-            warnings = self.controller.tokenizer_manager.get_compatibility_warnings(tokenizer_name)
-            
-            if warnings or not self.controller.license_manager.check_tokenizer_access(tokenizer_name):
-                warning_frame = Frame(parent, relief="solid", borderwidth=1)
-                warning_frame.pack(fill="x", pady=(0, 15))
-                
-                Label(warning_frame, text="⚠️ Compatibility Notices", 
-                      font=("Arial", 12, "bold"), foreground="red").pack(anchor="w", padx=15, pady=(10, 5))
-                
-                # Show access warnings
-                if not self.controller.license_manager.check_tokenizer_access(tokenizer_name):
-                    Label(warning_frame, text="🔒 Using fallback tokenizer - premium tokenizer access required", 
-                          font=("Arial", 10), foreground="red").pack(anchor="w", padx=15, pady=1)
-                
-                # Show compatibility warnings
-                for warning in warnings:
-                    Label(warning_frame, text=f"• {warning}", font=("Arial", 10), 
-                          foreground="red").pack(anchor="w", padx=15, pady=1)
-                
-                Label(warning_frame, text="").pack(pady=5)
-        
-        except Exception as e:
-            # Silently handle any compatibility checking errors
-            pass
-
-    def _populate_enhanced_chunks(self, text_widget, tokenizer_name):
-        """Populate text widget with enhanced chunk information - FIXED token length handling"""
-        # Configure color tags
-        text_widget.tag_config("chunk_header_optimal", foreground="#059669", font=("Arial", 10, "bold"))
-        text_widget.tag_config("chunk_header_close", foreground="#d97706", font=("Arial", 10, "bold"))
-        text_widget.tag_config("chunk_header_over", foreground="#dc2626", font=("Arial", 10, "bold"))
-        text_widget.tag_config("chunk_content", foreground="#374151", font=("Consolas", 9))
-        text_widget.tag_config("metadata", foreground="#6b7280", font=("Arial", 9))
-        text_widget.tag_config("separator", foreground="#d1d5db")
-        
-        chunks_to_show = min(10, len(self.chunks))
-        
-        for i in range(chunks_to_show):
-            chunk = self.chunks[i]
-            
-            # Truncate very long chunks before tokenization to avoid sequence length errors
-            chunk_for_tokenization = chunk if len(chunk) <= 2000 else chunk[:2000]
-            
-            # Get token count and metadata with error handling
-            try:
-                count, metadata = self.controller.get_token_count(chunk_for_tokenization, tokenizer_name)
-                # If chunk was truncated, add approximate adjustment
-                if len(chunk) > 2000:
-                    count = int(count * (len(chunk) / 2000))
-                    metadata['truncated'] = True
-            except Exception as e:
-                # Fallback to word-based estimation
-                count = int(len(chunk.split()) * 1.3)
-                metadata = {'accuracy': 'estimated', 'error': f'Tokenization error: {str(e)[:50]}...'}
-            
-            # Determine color coding and status
-            if count > TOKEN_LIMIT:
-                header_tag = "chunk_header_over"
-                status_icon = "🔴"
-                efficiency = "Over limit"
-            elif count > TOKEN_LIMIT * 0.9:
-                header_tag = "chunk_header_close"
-                status_icon = "🟡"
-                efficiency = "Close to limit"
-            else:
-                header_tag = "chunk_header_optimal"
-                status_icon = "🟢"
-                efficiency = "Optimal"
-            
-            # Create chunk header
-            header_text = f"{status_icon} Chunk {i+1} | {int(count)} tokens | {efficiency}"
-            
-            # Add accuracy and performance info if available
-            if metadata.get('accuracy'):
-                accuracy_icon = "🎯" if metadata['accuracy'] == 'exact' else "📊"
-                header_text += f" | {accuracy_icon} {metadata['accuracy'].title()}"
-            
-            if metadata.get('performance'):
-                perf_icon = {"fast": "⚡", "medium": "⚖️", "slow": "🐌"}.get(metadata['performance'], "")
-                header_text += f" {perf_icon}"
-            
-            # Add premium features info
-            if self.controller.license_manager.check_feature_access('advanced_analytics'):
-                # Calculate efficiency percentage
-                efficiency_pct = min(100, int((min(count, TOKEN_LIMIT) / (TOKEN_LIMIT * 0.9)) * 100))
-                header_text += f" | Efficiency: {efficiency_pct}%"
-            
-            text_widget.insert("end", header_text + "\n", header_tag)
-            
-            # Add metadata line
-            metadata_line = f"Length: {len(chunk)} chars"
-            if metadata.get('error'):
-                metadata_line += f" | Error: {metadata['error']}"
-            elif metadata.get('access_denied'):
-                metadata_line += f" | 🔒 Premium tokenizer access required"
-            elif metadata.get('truncated'):
-                metadata_line += f" | ⚠️ Chunk truncated for tokenization"
-            
-            text_widget.insert("end", metadata_line + "\n", "metadata")
-            
-            # Add chunk content (truncated if very long for display)
-            chunk_preview = chunk if len(chunk) <= 500 else chunk[:500] + "..."
-            text_widget.insert("end", chunk_preview + "\n", "chunk_content")
-            
-            # Add separator (except for last chunk)
-            if i < chunks_to_show - 1:
-                text_widget.insert("end", "─" * 80 + "\n\n", "separator")
-        
-        # Add summary if showing partial chunks
-        if len(self.chunks) > 10:
-            summary_text = f"\n... and {len(self.chunks) - 10} more chunks\n"
-            text_widget.insert("end", summary_text, "metadata")
-        
-        # Disable editing
-        text_widget.config(state="disabled")
+    def create_premium_analytics_window(self):
+        """SIMPLIFIED: Use extracted AnalyticsDashboard - NEW METHOD"""
+        analytics_dashboard = AnalyticsDashboard(
+            parent=self,
+            controller=self.controller,
+            current_analysis=self.current_analysis,
+            file_path=self.file_path,
+            tokenizer_name=getattr(self, '_current_tokenizer_name', 'gpt2'),
+            chunks=self.chunks
+        )
+        analytics_dashboard.show()
 
     def export_txt(self):
         if not self.chunks:
@@ -864,11 +569,11 @@ class AppFrame(Frame):
             
             # Buttons
             button_frame = Frame(main_frame)
-            button_frame.pack(fill="x", pady=(15, 0))
+            button_frame.pack(fill="x", pady=(10, 0))
             
             if upgrade_info['trial_available']:
-                trial_button = Button(button_frame, text="🆓 Start Free Trial (7 Days)", 
-                                    command=lambda: self.start_trial_from_upgrade_dialog(dialog), 
+                trial_button = Button(button_frame, text="🆓 Start Free Trial", 
+                                    command=lambda: self.start_trial_from_dialog(dialog), 
                                     style="Hover.TButton")
                 trial_button.pack(side="left", padx=(0, 10))
             
@@ -877,11 +582,11 @@ class AppFrame(Frame):
                                   style="Hover.TButton")
             upgrade_button.pack(side="left", padx=(0, 10))
             
-            close_button = Button(button_frame, text="Maybe Later", command=dialog.destroy)
+            close_button = Button(button_frame, text="Close", command=dialog.destroy)
             close_button.pack(side="right")
             
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to show upgrade information: {str(e)}")
+            messagebox.showerror("Error", f"Failed to show upgrade dialog: {str(e)}")
 
     def start_trial_from_upgrade_dialog(self, dialog):
         """Start trial from upgrade info dialog"""
@@ -901,11 +606,6 @@ class AppFrame(Frame):
             messagebox.showerror("Trial Error", 
                                "Trial could not be started.\n"
                                "You may have already used your trial period.")
-
-# END OF PART 3
-
-# ui/app_frame.py - Complete Enhanced Version Part 4 (FIXED)
-# Continue from Part 3...
 
     def save_session(self):
         """Enhanced session saving with tokenizer preferences"""
@@ -985,175 +685,12 @@ class AppFrame(Frame):
         except Exception as e:
             messagebox.showerror("Load Error", str(e))
 
-    def create_premium_analytics_window(self):
-        """Create dedicated analytics window for premium users"""
-        if not self.current_analysis:
-            messagebox.showwarning("No Analysis", "Please process a file first to see analytics.")
-            return
-            
-        if not self.controller.license_manager.check_feature_access('advanced_analytics'):
-            self.show_premium_upgrade_dialog('advanced_analytics')
-            return
-            
-        window = Toplevel()
-        window.title("Advanced Analytics Dashboard")
-        window.geometry("700x800")
-        
-        main_frame = Frame(window, padding=20)
-        main_frame.pack(fill="both", expand=True)
-        
-        # Title
-        Label(main_frame, text="📊 Advanced Analytics Dashboard", 
-              font=("Arial", 18, "bold")).pack(pady=(0, 20))
-        
-        analysis = self.current_analysis
-        tokenizer_name = getattr(self, '_current_tokenizer_name', 'gpt2')
-        
-        # Overview section
-        overview_frame = Frame(main_frame, relief="solid", padding=15)
-        overview_frame.pack(fill="x", pady=(0, 15))
-        
-        Label(overview_frame, text="📋 Overview", font=("Arial", 14, "bold")).pack(anchor="w")
-        
-        overview_stats = [
-            f"Dataset: {os.path.basename(self.file_path) if self.file_path else 'Unknown'}",
-            f"Tokenizer: {tokenizer_name}",
-            f"Total Chunks: {analysis['total_chunks']:,}",
-            f"Total Tokens: {analysis['total_tokens']:,}",
-            f"Average Tokens/Chunk: {analysis['avg_tokens']}",
-            f"Token Range: {analysis['min_tokens']} - {analysis['max_tokens']}",
-            f"Efficiency Score: {analysis.get('efficiency_score', 0)}%"
-        ]
-        
-        for stat in overview_stats:
-            Label(overview_frame, text=f"• {stat}", font=("Arial", 10)).pack(anchor="w", pady=1)
-        
-        # Token distribution section
-        if analysis.get('token_distribution'):
-            dist_frame = Frame(main_frame, relief="solid", padding=15)
-            dist_frame.pack(fill="x", pady=(0, 15))
-            
-            Label(dist_frame, text="📈 Token Distribution", font=("Arial", 14, "bold")).pack(anchor="w")
-            
-            dist = analysis['token_distribution']
-            total_chunks = analysis['total_chunks']
-            
-            dist_stats = [
-                f"Under 50 tokens: {dist['under_50']} ({dist['under_50']/total_chunks*100:.1f}%)",
-                f"50-200 tokens: {dist['50_200']} ({dist['50_200']/total_chunks*100:.1f}%)",
-                f"200-400 tokens: {dist['200_400']} ({dist['200_400']/total_chunks*100:.1f}%)",
-                f"400-512 tokens: {dist['400_512']} ({dist['400_512']/total_chunks*100:.1f}%)",
-                f"Over limit: {dist['over_limit']} ({dist['over_limit']/total_chunks*100:.1f}%)"
-            ]
-            
-            for stat in dist_stats:
-                Label(dist_frame, text=f"• {stat}", font=("Arial", 10)).pack(anchor="w", pady=1)
-        
-        # Cost estimation section
-        if analysis.get('cost_estimates'):
-            cost_frame = Frame(main_frame, relief="solid", padding=15)
-            cost_frame.pack(fill="x", pady=(0, 15))
-            
-            Label(cost_frame, text="💰 Cost Estimation", font=("Arial", 14, "bold")).pack(anchor="w")
-            
-            cost = analysis['cost_estimates']
-            cost_stats = [
-                f"Tokenizer: {cost['tokenizer']}",
-                f"Total Tokens: {cost['total_tokens']:,}",
-                f"Cost per 1K tokens: ${cost['cost_per_1k_tokens']:.4f}",
-                f"Estimated API Cost: ${cost['estimated_api_cost']:.4f}",
-                f"Note: {cost['note']}"
-            ]
-            
-            for stat in cost_stats:
-                Label(cost_frame, text=f"• {stat}", font=("Arial", 10)).pack(anchor="w", pady=1)
-        
-        # Recommendations section
-        if analysis.get('recommendations'):
-            rec_frame = Frame(main_frame, relief="solid", padding=15)
-            rec_frame.pack(fill="x", pady=(0, 15))
-            
-            Label(rec_frame, text="💡 Optimization Recommendations", font=("Arial", 14, "bold")).pack(anchor="w")
-            
-            for rec in analysis['recommendations']:
-                Label(rec_frame, text=f"• {rec}", wraplength=650, font=("Arial", 10)).pack(anchor="w", pady=2)
-        
-        # Action buttons
-        button_frame = Frame(main_frame)
-        button_frame.pack(fill="x", pady=(20, 0))
-        
-        export_analytics_btn = Button(button_frame, text="📊 Export Analytics Report", 
-                                    command=lambda: self.export_analytics_report(analysis))
-        export_analytics_btn.pack(side="left", padx=(0, 10))
-        
-        close_btn = Button(button_frame, text="Close", command=window.destroy)
-        close_btn.pack(side="right")
-
-    def export_analytics_report(self, analysis):
-        """Export detailed analytics report"""
-        path = filedialog.asksaveasfilename(
-            defaultextension=".json",
-            filetypes=[("JSON Report", "*.json"), ("Text Report", "*.txt")]
-        )
-        
-        if not path:
-            return
-            
-        try:
-            if path.endswith('.json'):
-                # Export as JSON
-                report_data = {
-                    'file_info': {
-                        'filename': os.path.basename(self.file_path) if self.file_path else 'Unknown',
-                        'processed_at': str(datetime.now()),
-                        'tokenizer_used': getattr(self, '_current_tokenizer_name', 'gpt2')
-                    },
-                    'analysis': analysis,
-                    'chunks_sample': self.chunks[:5] if len(self.chunks) > 5 else self.chunks
-                }
-                
-                with open(path, 'w', encoding='utf-8') as f:
-                    json.dump(report_data, f, indent=2, ensure_ascii=False)
-                    
-            else:
-                # Export as text report
-                with open(path, 'w', encoding='utf-8') as f:
-                    f.write("WOLFSCRIBE ANALYTICS REPORT\n")
-                    f.write("=" * 50 + "\n\n")
-                    
-                    f.write(f"File: {os.path.basename(self.file_path) if self.file_path else 'Unknown'}\n")
-                    f.write(f"Processed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write(f"Tokenizer: {getattr(self, '_current_tokenizer_name', 'gpt2')}\n\n")
-                    
-                    f.write("OVERVIEW\n")
-                    f.write("-" * 20 + "\n")
-                    f.write(f"Total Chunks: {analysis['total_chunks']:,}\n")
-                    f.write(f"Total Tokens: {analysis['total_tokens']:,}\n")
-                    f.write(f"Average Tokens: {analysis['avg_tokens']}\n")
-                    f.write(f"Min/Max Tokens: {analysis['min_tokens']} / {analysis['max_tokens']}\n")
-                    f.write(f"Over Limit: {analysis['over_limit']} ({analysis['over_limit_percentage']:.1f}%)\n")
-                    
-                    if analysis.get('efficiency_score'):
-                        f.write(f"Efficiency Score: {analysis['efficiency_score']}%\n")
-                    
-                    if analysis.get('recommendations'):
-                        f.write("\nRECOMMENDATIONS\n")
-                        f.write("-" * 20 + "\n")
-                        for i, rec in enumerate(analysis['recommendations'], 1):
-                            f.write(f"{i}. {rec}\n")
-            
-            messagebox.showinfo("Report Exported", f"Analytics report saved to {path}")
-            
-        except Exception as e:
-            messagebox.showerror("Export Error", f"Failed to export report: {str(e)}")
-
-# END OF PART 4
-
-# ui/app_frame.py - Complete Enhanced Version Part 5 (FIXED)
-# Continue from Part 4...
+    # ===================================================================
+    # REMAINING METHODS - TARGETS FOR FUTURE EXTRACTIONS (A3)
+    # ===================================================================
 
     def show_tokenizer_comparison(self):
-        """Show comparison of different tokenizers for current text (premium feature)"""
+        """Show comparison of different tokenizers - TARGET FOR A3 EXTRACTION"""
         if not self.chunks:
             messagebox.showwarning("No Data", "Please process a file first.")
             return
@@ -1233,7 +770,7 @@ class AppFrame(Frame):
         Button(main_frame, text="Close", command=window.destroy).pack(pady=(10, 0))
 
     def get_tokenizer_display_info(self, tokenizer_name):
-        """Get formatted display information for a tokenizer"""
+        """Get formatted display information for a tokenizer - HELPER METHOD"""
         try:
             tokenizer_info = next((t for t in self.controller.get_available_tokenizers() 
                                  if t['name'] == tokenizer_name), None)
@@ -1272,16 +809,6 @@ class AppFrame(Frame):
                 'status': 'Error loading info'
             }
 
-    def open_upgrade_url(self, dialog=None):
-        """Open upgrade URL in browser"""
-        try:
-            import webbrowser
-            webbrowser.open("https://wolflow.ai/upgrade")
-            if dialog:
-                dialog.destroy()
-        except Exception as e:
-            messagebox.showerror("Browser Error", f"Could not open browser: {str(e)}")
-            if dialog:
-                dialog.destroy()
-
-# End of AppFrame class
+# END OF FILE - FINAL ESTIMATED SIZE: ~500 lines (down from ~700 after A1)
+# ANALYTICS METHODS SUCCESSFULLY EXTRACTED TO ui/dialogs/analytics_dialog.py
+# REMAINING FOR A3 EXTRACTION: show_tokenizer_comparison() + premium dialog methods (~200 lines)

@@ -18,6 +18,20 @@ pdfminer.six>=20221105
 transformers>=4.39.3
 
 # ===============================
+# ENHANCED COST CALCULATOR
+# ===============================
+
+# HTTP Client Libraries for Real-time Pricing APIs
+aiohttp>=3.8.0          # Async HTTP client for cloud provider APIs
+requests>=2.28.0        # Synchronous HTTP requests with fallback support
+
+# Async Processing & Rate Limiting
+asyncio-throttle>=1.0.0 # Rate limiting for API calls to prevent abuse
+
+# Mathematical Analysis & Statistics
+numpy>=1.21.0           # Numerical computations for ROI analysis and scaling calculations
+
+# ===============================
 # PREMIUM TOKENIZER FEATURES
 # ===============================
 

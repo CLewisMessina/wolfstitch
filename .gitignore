@@ -36,6 +36,8 @@ output/
 *.export.csv
 *.export.txt
 
+# Test scripts
+.testing/
 
 # Tokenizer/model downloads (if added later)
 *.bin

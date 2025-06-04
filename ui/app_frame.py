@@ -1,4 +1,4 @@
-# ui/app_frame.py - FINAL OPTIMIZED VERSION after A3 Extraction
+# ui/app_frame.py - FINAL OPTIMIZED VERSION with Simple Dialogs
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, PhotoImage
@@ -10,15 +10,6 @@ from export.dataset_exporter import save_as_txt, save_as_csv
 from tkinterdnd2 import DND_FILES
 import json
 from session import Session
-
-# Import extracted dialogs
-from ui.dialogs import (
-    ChunkPreviewDialog, 
-    AnalyticsDashboard, 
-    TokenizerComparisonDialog,
-    PremiumUpgradeDialog,
-    PremiumInfoDialog
-)
 
 TOKEN_LIMIT = 512
 
@@ -134,7 +125,6 @@ class AppFrame(Frame):
         self.license_status_label = Label(content, text="", font=("Arial", 10), anchor="w")
         self.license_status_label.grid(row=9, column=0, sticky="ew", padx=10, pady=(0, 10))
         self.update_license_status()
-
 
         Button(content, image=self.icons["clean"], text=" Process Text", compound="left",
                command=self.process_text, style="Hover.TButton").grid(row=10, column=0, sticky="ew", padx=10, pady=(0, 16))
@@ -279,9 +269,28 @@ class AppFrame(Frame):
             self.update_chunk_analysis()
 
     def show_premium_upgrade_dialog(self, feature_name):
-        """SIMPLIFIED: Use extracted PremiumUpgradeDialog"""
-        upgrade_dialog = PremiumUpgradeDialog(self, self.controller, feature_name)
-        upgrade_dialog.show()
+        """SIMPLIFIED: Use basic messagebox for premium upgrade"""
+        try:
+            upgrade_info = self.controller.get_upgrade_info()
+            premium_features = upgrade_info.get('premium_features', [])
+            
+            feature_list = "\n".join([f"• {f['description']}" for f in premium_features[:5]])
+            
+            message = f"""🔒 Premium Feature: {feature_name}
+
+Premium features include:
+{feature_list}
+
+💎 Premium: $15/month or $150/year
+🆓 7-day free trial available
+
+Would you like to start your free trial?"""
+            
+            result = messagebox.askyesno("Upgrade to Premium", message)
+            if result:
+                self.start_trial()
+        except Exception as e:
+            messagebox.showerror("Upgrade Error", f"Failed to show upgrade info: {str(e)}")
 
     def update_chunk_analysis(self):
         """Update chunk analysis with current tokenizer"""
@@ -375,44 +384,137 @@ class AppFrame(Frame):
         except Exception as e:
             messagebox.showerror("Processing Error", str(e))
 
-    # Dialog launchers - SIMPLIFIED using extracted dialogs
     def preview_chunks(self):
-        """SIMPLIFIED: Use extracted ChunkPreviewDialog"""
+        """SIMPLIFIED: Use basic Toplevel window for chunk preview"""
         if not self.chunks:
             messagebox.showwarning("No Data", "You must process a file first.")
             return
 
         tokenizer_name = getattr(self, '_current_tokenizer_name', 'gpt2')
         
-        preview_dialog = ChunkPreviewDialog(
-            parent=self,
-            chunks=self.chunks,
-            controller=self.controller,
-            tokenizer_name=tokenizer_name,
-            current_analysis=self.current_analysis
-        )
-        preview_dialog.show()
+        try:
+            # Create simple preview window
+            preview_window = tk.Toplevel(self)
+            preview_window.title("Chunk Preview")
+            preview_window.geometry("800x600")
+            preview_window.transient(self)
+            
+            # Create scrollable text widget
+            text_frame = Frame(preview_window)
+            text_frame.pack(fill=BOTH, expand=True, padx=10, pady=10)
+            
+            text_widget = tk.Text(text_frame, wrap=tk.WORD, font=("Arial", 10))
+            scrollbar = tk.Scrollbar(text_frame, orient="vertical", command=text_widget.yview)
+            text_widget.configure(yscrollcommand=scrollbar.set)
+            
+            text_widget.pack(side="left", fill=BOTH, expand=True)
+            scrollbar.pack(side="right", fill="y")
+            
+            # Add chunk content with basic analysis
+            content = f"📊 CHUNK PREVIEW - {len(self.chunks)} chunks\n"
+            content += f"Tokenizer: {tokenizer_name}\n"
+            content += "=" * 60 + "\n\n"
+            
+            # Show first 10 chunks with token counts
+            for i, chunk in enumerate(self.chunks[:10]):
+                count, _ = self.controller.get_token_count(chunk, tokenizer_name)
+                status = "🟢" if count <= TOKEN_LIMIT else "🔴"
+                content += f"{status} Chunk {i+1} | {count} tokens\n"
+                content += f"{chunk[:200]}{'...' if len(chunk) > 200 else ''}\n"
+                content += "-" * 40 + "\n\n"
+            
+            if len(self.chunks) > 10:
+                content += f"... and {len(self.chunks) - 10} more chunks\n"
+            
+            text_widget.insert("1.0", content)
+            text_widget.config(state="disabled")
+            
+            # Add close button
+            Button(preview_window, text="Close", command=preview_window.destroy).pack(pady=5)
+            
+        except Exception as e:
+            messagebox.showerror("Preview Error", f"Failed to show preview: {str(e)}")
 
     def create_premium_analytics_window(self):
-        """SIMPLIFIED: Use extracted AnalyticsDashboard"""
-        analytics_dashboard = AnalyticsDashboard(
-            parent=self,
-            controller=self.controller,
-            current_analysis=self.current_analysis,
-            file_path=self.file_path,
-            tokenizer_name=getattr(self, '_current_tokenizer_name', 'gpt2'),
-            chunks=self.chunks
-        )
-        analytics_dashboard.show()
+        """SIMPLIFIED: Use messagebox for analytics summary"""
+        if not self.current_analysis:
+            messagebox.showwarning("No Analysis", "No analysis data available.")
+            return
+        
+        try:
+            analysis = self.current_analysis
+            
+            # Create analytics summary
+            summary = f"""📊 ANALYTICS SUMMARY
+
+Dataset Overview:
+• Total Chunks: {analysis.get('total_chunks', 0)}
+• Total Tokens: {analysis.get('total_tokens', 0):,}
+• Average Tokens: {analysis.get('avg_tokens', 0)}
+• Over Limit: {analysis.get('over_limit', 0)} ({analysis.get('over_limit_percentage', 0):.1f}%)
+
+Efficiency Score: {analysis.get('efficiency_score', 0)}%"""
+            
+            # Add cost preview if available
+            cost_preview = analysis.get('cost_preview', {})
+            if cost_preview.get('available'):
+                summary += f"""
+
+💰 Cost Analysis:
+• Best Approach: {cost_preview.get('best_approach', 'N/A')}
+• Estimated Cost: ${cost_preview.get('estimated_cost', 0):.2f}
+• Training Hours: {cost_preview.get('training_hours', 0):.1f}h"""
+            else:
+                summary += f"""
+
+💰 Cost Preview:
+• Estimated Range: {cost_preview.get('estimated_cost_range', 'N/A')}
+• {cost_preview.get('upgrade_message', '')}"""
+            
+            # Add recommendations
+            recommendations = analysis.get('recommendations', [])
+            if recommendations:
+                summary += "\n\n💡 Recommendations:\n"
+                for i, rec in enumerate(recommendations[:3], 1):
+                    summary += f"{i}. {rec}\n"
+            
+            messagebox.showinfo("Analytics Dashboard", summary)
+            
+        except Exception as e:
+            messagebox.showerror("Analytics Error", f"Failed to show analytics: {str(e)}")
 
     def show_tokenizer_comparison(self):
-        """SIMPLIFIED: Use extracted TokenizerComparisonDialog"""
-        comparison_dialog = TokenizerComparisonDialog(
-            parent=self,
-            controller=self.controller,
-            chunks=self.chunks
-        )
-        comparison_dialog.show()
+        """SIMPLIFIED: Use messagebox for tokenizer comparison"""
+        if not self.chunks:
+            messagebox.showwarning("No Data", "Process a file first to compare tokenizers.")
+            return
+        
+        try:
+            available_tokenizers = self.controller.get_available_tokenizers()
+            
+            # Get sample text for comparison
+            sample_text = self.chunks[0][:500] if self.chunks else "Sample text for comparison"
+            
+            comparison = "🔍 TOKENIZER COMPARISON\n\n"
+            comparison += f"Sample: {sample_text[:100]}...\n"
+            comparison += "=" * 50 + "\n\n"
+            
+            for tokenizer in available_tokenizers[:5]:  # Limit to 5 tokenizers
+                if tokenizer['available']:
+                    try:
+                        count, metadata = self.controller.get_token_count(sample_text, tokenizer['name'])
+                        access = "✅" if tokenizer['has_access'] else "🔒"
+                        comparison += f"{access} {tokenizer['display_name']}: {count} tokens\n"
+                        comparison += f"   Accuracy: {tokenizer['accuracy']} | Performance: {tokenizer['performance']}\n\n"
+                    except:
+                        comparison += f"❌ {tokenizer['display_name']}: Error\n\n"
+            
+            comparison += "\n💡 Recommendation: Use exact tokenizers for production datasets"
+            
+            messagebox.showinfo("Tokenizer Comparison", comparison)
+            
+        except Exception as e:
+            messagebox.showerror("Comparison Error", f"Failed to compare tokenizers: {str(e)}")
 
     # Export operations
     def export_txt(self):
@@ -455,9 +557,67 @@ class AppFrame(Frame):
             messagebox.showerror("Trial Error", f"Failed to start trial: {str(e)}")
 
     def show_upgrade_info(self):
-        """SIMPLIFIED: Use extracted PremiumInfoDialog"""
-        info_dialog = PremiumInfoDialog(self, self.controller)
-        info_dialog.show()
+        """SIMPLIFIED: Use messagebox for premium info"""
+        try:
+            upgrade_info = self.controller.get_upgrade_info()
+            license_status = upgrade_info.get('current_status', 'free')
+            
+            if license_status == 'trial':
+                days = upgrade_info.get('days_remaining', 0)
+                message = f"""⏱️ TRIAL STATUS
+
+You have {days} days remaining in your premium trial.
+
+Premium Features Active:
+• Exact GPT-4 & GPT-3.5 tokenization
+• Advanced cost analysis with 15+ approaches
+• ROI analysis and optimization recommendations
+• Real-time cloud pricing integration
+
+Upgrade to keep these features after trial expires.
+
+💎 Premium: $15/month or $150/year"""
+            
+            elif license_status == 'active':
+                message = """✅ PREMIUM ACTIVE
+
+Your premium license is active with full access to:
+• Exact tokenization for all major models
+• Comprehensive cost analysis
+• Advanced analytics with export
+• Priority support
+
+Thank you for supporting Wolfscribe!"""
+            
+            else:  # free
+                premium_features = upgrade_info.get('premium_features', [])
+                feature_list = "\n".join([f"• {f['description']}" for f in premium_features[:5]])
+                
+                message = f"""💎 UPGRADE TO PREMIUM
+
+Current: Free Tier
+• GPT-2 tokenization only
+• Basic chunk analysis
+
+Premium Features:
+{feature_list}
+
+💰 Pricing:
+• Monthly: $15/month
+• Yearly: $150/year (save $30!)
+
+🆓 Start 7-day free trial - no credit card required"""
+            
+            result = messagebox.showinfo("Premium Information", message)
+            
+            # Offer trial if user is on free tier
+            if license_status == 'free':
+                trial_result = messagebox.askyesno("Start Trial?", "Would you like to start your 7-day free trial now?")
+                if trial_result:
+                    self.start_trial()
+                    
+        except Exception as e:
+            messagebox.showerror("Info Error", f"Failed to show upgrade info: {str(e)}")
 
     # Session operations
     def save_session(self):
@@ -527,6 +687,4 @@ class AppFrame(Frame):
         except Exception as e:
             messagebox.showerror("Load Error", str(e))
 
-# END OF FILE - FINAL SIZE: ~320 lines (down from original 1,287 lines)
-# TOTAL REDUCTION: 75% file size reduction achieved
-# TOKEN EFFICIENCY: ~6-8 features per conversation (up from 1-2)
+# END OF FILE - Simple Dialog Implementation Complete

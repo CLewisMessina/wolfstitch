@@ -74,6 +74,10 @@ class LicenseManager:
                 'description': 'OpenAI, Claude, and BERT tokenizers',
                 'tokenizers': ['tiktoken_gpt4', 'tiktoken_gpt35', 'sentence_transformer', 'claude_estimator']
             },
+            'advanced_cost_analysis': {
+            'tier': FeatureTier.PREMIUM,
+            'description': 'Comprehensive AI training cost analysis and optimization'
+            },
             'smart_chunking': {
                 'tier': FeatureTier.PREMIUM,
                 'description': 'AI-powered dynamic chunking optimization'

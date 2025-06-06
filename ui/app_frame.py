@@ -69,27 +69,44 @@ class AppFrame(Frame):
         self._setup_modern_ui()
 
     def _setup_icons(self):
-        """Setup application icons with fallback"""
+        """Setup Material Design icons with fallback"""
         self.icon = lambda name: PhotoImage(file=f"assets/icons/{name}")
         try:
             self.icons = {
-                "file": self.icon("icon-file-upload.png"),
-                "text": self.icon("icon-file-text.png"),
-                "clean": self.icon("icon-clean.png"),
-                "split_paragraph": self.icon("icon-split-paragraph.png"),
-                "split_sentence": self.icon("icon-split-sentence.png"),
-                "split_custom": self.icon("icon-split-custom.png"),
-                "preview": self.icon("icon-preview.png"),
-                "export_txt": self.icon("icon-export-txt.png"),
-                "export_csv": self.icon("icon-export-csv.png"),
-                "save": self.icon("icon-save.png"),
-                "file_up": self.icon("icon-file-up.png")
+                # Core functionality icons
+                "file": self.icon("upload_file.png"),          # File selection
+                "clean": self.icon("tune.png"),                # Process text
+                "preview": self.icon("visibility.png"),        # Preview chunks
+                "export_txt": self.icon("description.png"),    # Export TXT
+                "export_csv": self.icon("table_view.png"),     # Export CSV
+                "save": self.icon("save.png"),                 # Save session
+                "file_up": self.icon("folder_open.png"),       # Load session
+
+                # Enhanced icons for modern features
+                "cost_analysis": self.icon("analytics.png"),   # Cost analysis
+                "settings": self.icon("settings.png"),         # Settings/tokenizer
+                "premium": self.icon("star.png"),              # Premium features
+
+                # Legacy compatibility (remove these once you've confirmed all new icons work)
+                "text": self.icon("description.png"),          # Fallback for text operations
+                "split_paragraph": self.icon("tune.png"),      # Fallback for splitting
+                "split_sentence": self.icon("tune.png"),       # Fallback for splitting
+                "split_custom": self.icon("tune.png")          # Fallback for splitting
             }
-        except:
-            # Fallback if icons not available
-            self.icons = {key: None for key in ["file", "text", "clean", "split_paragraph", 
-                                               "split_sentence", "split_custom", "preview", 
-                                               "export_txt", "export_csv", "save", "file_up"]}
+
+            print("✅ Material Design icons loaded successfully!")
+
+        except Exception as e:
+            print(f"⚠️ Icon loading failed: {e}")
+            # Enhanced fallback - create None icons for all expected keys
+            icon_keys = [
+                "file", "clean", "preview", "export_txt", "export_csv", "save", "file_up",
+                "cost_analysis", "settings", "premium", "text", "split_paragraph", 
+                "split_sentence", "split_custom"
+            ]
+            self.icons = {key: None for key in icon_keys}
+            print("📦 Using text-only buttons as fallback")
+
 
     def _setup_modern_ui(self):
         """Setup main UI layout with modern slate styling"""
@@ -173,7 +190,11 @@ class AppFrame(Frame):
                style="Primary.TButton").pack(fill="x", pady=(0, 8))
 
         # *** ENHANCED: Cost Analysis Button ***
-        cost_button = Button(preprocess_section, text="💰 Analyze Training Costs", 
+# *** ENHANCED: Cost Analysis Button ***
+        cost_button = Button(preprocess_section, 
+                            image=self.icons["cost_analysis"],
+                            text="  Analyze Training Costs", 
+                            compound="left",
                             command=self.show_cost_analysis, 
                             style="CostAnalysis.TButton")
         cost_button.pack(fill="x")
@@ -644,13 +665,19 @@ Would you like to start your free trial?"""
             if not license_info['premium_licensed']:
                 Label(self.premium_section, text="💎 Premium Features", 
                       style="Heading.TLabel").pack(anchor="w", pady=(0, 12))
-                
-                upgrade_button = Button(self.premium_section, text="🚀 Start Free Trial", 
+
+                upgrade_button = Button(self.premium_section, 
+                                      image=self.icons["premium"],
+                                      text="  Start Free Trial", 
+                                      compound="left",
                                       command=self.start_trial, 
                                       style="Premium.TButton")
                 upgrade_button.pack(fill="x", pady=(0, 8))
                 
-                upgrade_info_button = Button(self.premium_section, text="💎 View Premium Features", 
+                upgrade_info_button = Button(self.premium_section, 
+                                           image=self.icons["settings"],
+                                           text="  View Premium Features", 
+                                           compound="left",
                                            command=self.show_upgrade_info, 
                                            style="Secondary.TButton")
                 upgrade_info_button.pack(fill="x")

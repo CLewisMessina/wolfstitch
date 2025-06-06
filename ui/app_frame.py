@@ -1,4 +1,4 @@
-# ui/app_frame.py - MODERN SLATE THEME VERSION (Part 1 of 2)
+# ui/app_frame.py
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox, PhotoImage
@@ -69,40 +69,44 @@ class AppFrame(Frame):
         self._setup_modern_ui()
 
     def _setup_icons(self):
-        """Setup Material Design icons with fallback"""
-        self.icon = lambda name: PhotoImage(file=f"assets/icons/{name}")
+        """Setup Material Design icons with multiple sizes"""
+        # Icon loading functions for different sizes
+        self.icon_24 = lambda name: PhotoImage(file=f"assets/icons/24px/{name}")
+        self.icon_36 = lambda name: PhotoImage(file=f"assets/icons/36px/{name}")
+        
         try:
             self.icons = {
-                # Core functionality icons
-                "file": self.icon("upload_file.png"),          # File selection
-                "clean": self.icon("tune.png"),                # Process text
-                "preview": self.icon("visibility.png"),        # Preview chunks
-                "export_txt": self.icon("description.png"),    # Export TXT
-                "export_csv": self.icon("table_view.png"),     # Export CSV
-                "save": self.icon("save.png"),                 # Save session
-                "file_up": self.icon("folder_open.png"),       # Load session
-
-                # Enhanced icons for modern features
-                "cost_analysis": self.icon("analytics.png"),   # Cost analysis
-                "settings": self.icon("settings.png"),         # Settings/tokenizer
-                "premium": self.icon("star.png"),              # Premium features
-
-                # Legacy compatibility (remove these once you've confirmed all new icons work)
-                "text": self.icon("description.png"),          # Fallback for text operations
-                "split_paragraph": self.icon("tune.png"),      # Fallback for splitting
-                "split_sentence": self.icon("tune.png"),       # Fallback for splitting
-                "split_custom": self.icon("tune.png")          # Fallback for splitting
+                # 24px icons for buttons (existing)
+                "file": self.icon_24("upload_file.png"),
+                "clean": self.icon_24("tune.png"),
+                "preview": self.icon_24("visibility.png"),
+                "export_txt": self.icon_24("description.png"),
+                "export_csv": self.icon_24("table_view.png"),
+                "save": self.icon_24("save.png"),
+                "file_up": self.icon_24("folder_open.png"),
+                "cost_analysis": self.icon_24("analytics.png"),
+                "settings": self.icon_24("settings.png"),
+                "premium": self.icon_24("diamond.png"),
+                
+                # 36px icons for headers (new)
+                "file_header": self.icon_36("folder_open.png"),
+                "preprocessing_header": self.icon_36("tune.png"),
+                "preview_header": self.icon_36("visibility.png"),
+                "export_header": self.icon_36("upload_file.png"),
+                "session_header": self.icon_36("save.png"),
+                "premium_header": self.icon_36("diamond.png"),
             }
-
-            print("✅ Material Design icons loaded successfully!")
-
+            
+            print("✅ Material Design icons loaded successfully with multiple sizes!")
+            
         except Exception as e:
             print(f"⚠️ Icon loading failed: {e}")
-            # Enhanced fallback - create None icons for all expected keys
+            # Enhanced fallback for all expected keys
             icon_keys = [
                 "file", "clean", "preview", "export_txt", "export_csv", "save", "file_up",
-                "cost_analysis", "settings", "premium", "text", "split_paragraph", 
-                "split_sentence", "split_custom"
+                "cost_analysis", "settings", "premium",
+                "file_header", "preprocessing_header", "preview_header", 
+                "export_header", "session_header", "premium_header"
             ]
             self.icons = {key: None for key in icon_keys}
             print("📦 Using text-only buttons as fallback")
@@ -115,9 +119,13 @@ class AppFrame(Frame):
         # ==================== FILE LOADER SECTION ====================
         file_section = Frame(content, style="Card.TFrame")
         file_section.grid(row=0, column=0, sticky="ew", padx=0, pady=(0, 20))
-        
-        Label(file_section, text="📁 File Loader", 
-              style="Heading.TLabel").pack(anchor="w", pady=(0, 8))
+
+        # NEW: Header with icon
+        header_frame = Frame(file_section, style="Modern.TFrame")
+        header_frame.pack(fill="x", pady=(0, 8))
+
+        Label(header_frame, image=self.icons["file_header"], compound="left", background=MODERN_SLATE['bg_cards']).pack(side="left")
+        Label(header_frame, text=" File Loader", style="Heading.TLabel", background=MODERN_SLATE['bg_cards']).pack(side="left")		
         
         self.file_label = Label(file_section, text="No file selected", 
                                style="Secondary.TLabel", anchor="w")
@@ -134,9 +142,15 @@ class AppFrame(Frame):
         # ==================== PREPROCESSING SECTION ====================
         preprocess_section = Frame(content, style="Card.TFrame")
         preprocess_section.grid(row=1, column=0, sticky="ew", padx=0, pady=(0, 20))
-        
-        Label(preprocess_section, text="⚙️ Preprocessing", 
-              style="Heading.TLabel").pack(anchor="w", pady=(0, 12))
+
+        # NEW: Header with icon
+        header_frame = Frame(preprocess_section, style="Modern.TFrame")
+        header_frame.pack(fill="x", pady=(0, 12))
+
+        Label(header_frame, image=self.icons["preprocessing_header"], compound="left", background=MODERN_SLATE['bg_cards']).pack(side="left")
+        Label(header_frame, text=" Preprocessing", style="Heading.TLabel", background=MODERN_SLATE['bg_cards']).pack(side="left")
+
+
         
         # Split Method
         Label(preprocess_section, text="Split Method:", 
@@ -190,7 +204,6 @@ class AppFrame(Frame):
                style="Primary.TButton").pack(fill="x", pady=(0, 8))
 
         # *** ENHANCED: Cost Analysis Button ***
-# *** ENHANCED: Cost Analysis Button ***
         cost_button = Button(preprocess_section, 
                             image=self.icons["cost_analysis"],
                             text="  Analyze Training Costs", 
@@ -211,9 +224,13 @@ class AppFrame(Frame):
         # ==================== PREVIEW SECTION ====================
         preview_section = Frame(content, style="Card.TFrame")
         preview_section.grid(row=2, column=0, sticky="ew", padx=0, pady=(0, 20))
-        
-        Label(preview_section, text="👁️ Preview", 
-              style="Heading.TLabel").pack(anchor="w", pady=(0, 12))
+
+        # NEW: Header with icon
+        header_frame = Frame(preview_section, style="Modern.TFrame")
+        header_frame.pack(fill="x", pady=(0, 12))
+
+        Label(header_frame, image=self.icons["preview_header"], compound="left", background=MODERN_SLATE['bg_cards']).pack(side="left")
+        Label(header_frame, text=" Preview", style="Heading.TLabel", background=MODERN_SLATE['bg_cards']).pack(side="left")
         
         Button(preview_section, image=self.icons["preview"], 
                text="  Preview Chunks", compound="left",
@@ -223,9 +240,13 @@ class AppFrame(Frame):
         # ==================== EXPORT SECTION ====================
         export_section = Frame(content, style="Card.TFrame")
         export_section.grid(row=3, column=0, sticky="ew", padx=0, pady=(0, 20))
-        
-        Label(export_section, text="📤 Export Dataset", 
-              style="Heading.TLabel").pack(anchor="w", pady=(0, 12))
+
+        # NEW: Header with icon
+        header_frame = Frame(export_section, style="Modern.TFrame")
+        header_frame.pack(fill="x", pady=(0, 12))
+
+        Label(header_frame, image=self.icons["export_header"], compound="left", background=MODERN_SLATE['bg_cards']).pack(side="left")
+        Label(header_frame, text=" Export Dataset", style="Heading.TLabel", background=MODERN_SLATE['bg_cards']).pack(side="left")
         
         Button(export_section, image=self.icons["export_txt"], 
                text="  Export as .txt", compound="left",
@@ -240,9 +261,13 @@ class AppFrame(Frame):
         # ==================== SESSION SECTION ====================
         session_section = Frame(content, style="Card.TFrame")
         session_section.grid(row=4, column=0, sticky="ew", padx=0, pady=(0, 20))
-        
-        Label(session_section, text="💾 Session Management", 
-              style="Heading.TLabel").pack(anchor="w", pady=(0, 12))
+
+        # NEW: Header with icon
+        header_frame = Frame(session_section, style="Modern.TFrame")
+        header_frame.pack(fill="x", pady=(0, 12))
+
+        Label(header_frame, image=self.icons["session_header"], compound="left", background=MODERN_SLATE['bg_cards']).pack(side="left")
+        Label(header_frame, text=" Session Management", style="Heading.TLabel", background=MODERN_SLATE['bg_cards']).pack(side="left")
         
         Button(session_section, image=self.icons["save"], 
                text="  Save Session", compound="left",
@@ -374,7 +399,7 @@ Would you like to start your free trial?"""
         summary = cost_data.get('summary', {})
         
         # Header Section with modern styling
-        header_frame = Frame(content_frame, style="Card.TFrame", padding=(0, 0, 0, 20))
+        header_frame = Frame(content_frame, style="Modern.TFrame", padding=(0, 0, 0, 20))
         header_frame.pack(fill=X)
         
         Label(header_frame, text="💰 Comprehensive Training Cost Analysis", 
@@ -663,8 +688,11 @@ Would you like to start your free trial?"""
                 widget.destroy()
             
             if not license_info['premium_licensed']:
-                Label(self.premium_section, text="💎 Premium Features", 
-                      style="Heading.TLabel").pack(anchor="w", pady=(0, 12))
+                header_frame = Frame(self.premium_section, style="Modern.TFrame")
+                header_frame.pack(fill="x", pady=(0, 12))
+
+                Label(header_frame, image=self.icons["premium_header"], compound="left").pack(side="left")
+                Label(header_frame, text=" Premium Features", style="Heading.TLabel").pack(side="left")
 
                 upgrade_button = Button(self.premium_section, 
                                       image=self.icons["premium"],

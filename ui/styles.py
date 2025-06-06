@@ -4,7 +4,7 @@ import tkinter as tk
 
 # Modern Slate Color Palette
 MODERN_SLATE = {
-    'bg_primary': '#0f172a',      # slate-900 (main background)
+    'bg_primary': '#334155',      # slate-900 (main background)
     'bg_secondary': '#1e293b',    # slate-800 (panels)
     'bg_cards': '#334155',        # slate-700 (cards/sections)
     'bg_hover': '#475569',        # slate-600 (hover states)

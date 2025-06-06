@@ -1,4 +1,4 @@
-# ui/styles.py - Modern Slate Theme Enhancement
+# ui/styles.py - Modern Slate Theme Enhancement with Progress Bars
 from ttkbootstrap import Style
 import tkinter as tk
 
@@ -278,6 +278,41 @@ def apply_modern_slate_theme(style: Style):
         arrowcolor=MODERN_SLATE['text_secondary'],
         darkcolor=MODERN_SLATE['bg_cards'],
         lightcolor=MODERN_SLATE['bg_cards']
+    )
+    
+    # ==================== PROGRESS BAR STYLES ====================
+    
+    # Modern progress bar for loading states
+    style.configure("Modern.Horizontal.TProgressbar",
+        background=MODERN_SLATE['accent_blue'],
+        troughcolor=MODERN_SLATE['bg_secondary'],
+        borderwidth=0,
+        lightcolor=MODERN_SLATE['accent_blue'],
+        darkcolor=MODERN_SLATE['accent_blue'],
+        focuscolor="none",
+        relief="flat"
+    )
+    
+    # Progress bar for cost analysis
+    style.configure("CostAnalysis.Horizontal.TProgressbar",
+        background=MODERN_SLATE['cost_savings'],
+        troughcolor=MODERN_SLATE['bg_secondary'],
+        borderwidth=0,
+        lightcolor=MODERN_SLATE['cost_savings'],
+        darkcolor=MODERN_SLATE['cost_savings'],
+        focuscolor="none",
+        relief="flat"
+    )
+    
+    # Success progress bar
+    style.configure("Success.Horizontal.TProgressbar",
+        background=MODERN_SLATE['success'],
+        troughcolor=MODERN_SLATE['bg_secondary'],
+        borderwidth=0,
+        lightcolor=MODERN_SLATE['success'],
+        darkcolor=MODERN_SLATE['success'],
+        focuscolor="none",
+        relief="flat"
     )
     
     # ==================== SPECIAL EFFECT STYLES ====================

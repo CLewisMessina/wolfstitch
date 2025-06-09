@@ -21,7 +21,8 @@ Built for professional AI developers, researchers, and enterprises who need **ac
 
 ## 📸 Premium Demo Video
 
-https://github.com/user-attachments/assets/2596b35e-6202-4c86-91e9-e9df729f6a18
+https://github.com/user-attachments/assets/db42a8c2-d9e2-44e5-b257-40256710fb27
+
 
 ---
 

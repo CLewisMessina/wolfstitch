@@ -461,17 +461,19 @@ class AppFrame(Frame):
         except Exception as e:
             messagebox.showerror("Analysis Error", f"Failed to analyze chunks: {str(e)}")
 
-    # File operations - UPDATED FOR DOCX SUPPORT
+    # File operations - UPDATED FOR DOCX and CSV SUPPORT
+
     def select_file(self):
-        """Select file for processing - now supports DOCX"""
+        """Select file for processing - now supports CSV"""
         path = filedialog.askopenfilename(
             title="Select Book or Document",
             filetypes=[
-                ("All Supported Files", "*.txt *.pdf *.epub *.docx"),
+                ("All Supported Files", "*.txt *.pdf *.epub *.docx *.csv"),
                 ("Text Files", "*.txt"),
                 ("PDF Files", "*.pdf"), 
                 ("EPUB Files", "*.epub"),
                 ("Word Documents", "*.docx"),
+                ("CSV Files", "*.csv"),
                 ("All Files", "*.*")
             ]
         )
@@ -484,7 +486,8 @@ class AppFrame(Frame):
                 '.txt': '📄',
                 '.pdf': '📕', 
                 '.epub': '📚',
-                '.docx': '📝'
+                '.docx': '📝',
+                '.csv': '📊'
             }
             emoji = format_emoji.get(file_ext, '📄')
             self.file_label.config(text=f"{emoji} {filename}")
@@ -492,10 +495,13 @@ class AppFrame(Frame):
             self.current_analysis = None
             self.session.add_file(path)
 
+    # Updated handle_file_drop() function
+    # Replace the existing handle_file_drop() function with this version:
+
     def handle_file_drop(self, event):
-        """Handle drag and drop file - now supports DOCX"""
+        """Handle drag and drop file - now supports CSV"""
         path = event.data.strip("{}")
-        supported_extensions = (".txt", ".pdf", ".epub", ".docx")
+        supported_extensions = (".txt", ".pdf", ".epub", ".docx", ".csv")
         
         if os.path.isfile(path) and path.lower().endswith(supported_extensions):
             self.file_path = path
@@ -506,7 +512,8 @@ class AppFrame(Frame):
                 '.txt': '📄',
                 '.pdf': '📕', 
                 '.epub': '📚',
-                '.docx': '📝'
+                '.docx': '📝',
+                '.csv': '📊'
             }
             emoji = format_emoji.get(file_ext, '📄')
             self.file_label.config(text=f"{emoji} {filename}")
@@ -516,7 +523,7 @@ class AppFrame(Frame):
         else:
             messagebox.showerror(
                 "Invalid File", 
-                "Please drop a valid file (.txt, .pdf, .epub, or .docx)."
+                "Please drop a valid file (.txt, .pdf, .epub, .docx, or .csv)."
             )
 
     def on_split_method_change(self, event=None):

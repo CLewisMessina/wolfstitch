@@ -1,10 +1,16 @@
 # processing/extract.py
 import os
 import zipfile
+import csv
+import pandas as pd
+import logging
+import re
+from typing import List, Dict, Any, Tuple
+from io import StringIO
 from bs4 import BeautifulSoup
 
 def load_file(path):
-    """Main dispatcher for file loading - now supports DOCX"""
+    """Main dispatcher for file loading - supports TXT, PDF, EPUB, DOCX, and CSV"""
     ext = os.path.splitext(path)[1].lower()
     if ext == ".txt":
         return load_txt(path)
@@ -14,6 +20,8 @@ def load_file(path):
         return load_epub(path)
     elif ext == ".docx":
         return load_docx(path)
+    elif ext == ".csv":
+        return load_csv(path)
     else:
         raise ValueError(f"Unsupported file type: {ext}")
 
@@ -134,6 +142,117 @@ def load_docx(path):
             raise  # Re-raise our custom errors
         else:
             raise RuntimeError(f"DOCX extraction failed: {str(e)}")
+
+def load_csv(path: str, max_lines: int = 500) -> str:
+    """
+    Load and intelligently extract text content from CSV files
+    
+    Extracts trainable text content by:
+    - Detecting text vs numeric columns automatically
+    - Handling different CSV formats (comma, semicolon, tab-separated)
+    - Combining multi-column text appropriately
+    - Ignoring purely numeric/date columns
+    - Handling encoding issues and missing headers
+    
+    Args:
+        path (str): Path to the CSV file
+        max_lines (int): Maximum lines to process (default 500 for small files)
+        
+    Returns:
+        str: Extracted text content suitable for AI training
+        
+    Raises:
+        RuntimeError: If CSV processing fails or file is too large
+    """
+    try:
+        # First, perform file size and content analysis
+        file_info = _analyze_csv_file(path)
+        
+        # Check if file is too large and needs splitting
+        if file_info['estimated_rows'] > max_lines:
+            raise RuntimeError(
+                f"CSV file is too large ({file_info['estimated_rows']:,} rows). "
+                f"This exceeds the {max_lines} line limit for efficient processing. "
+                f"Please split the file into smaller chunks or contact support for batch processing options."
+            )
+        
+        # Try multiple encoding strategies
+        encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
+        df = None
+        used_encoding = None
+        
+        for encoding in encodings:
+            try:
+                # Detect delimiter and read CSV
+                delimiter = _detect_csv_delimiter(path, encoding)
+                df = pd.read_csv(
+                    path, 
+                    encoding=encoding,
+                    delimiter=delimiter,
+                    low_memory=False,
+                    na_values=['', 'N/A', 'NULL', 'null', 'None'],
+                    keep_default_na=True,
+                    dtype=str  # Read everything as string initially
+                )
+                used_encoding = encoding
+                logging.info(f"Successfully read CSV with {encoding} encoding using '{delimiter}' delimiter")
+                break
+            except (UnicodeDecodeError, pd.errors.ParserError) as e:
+                logging.warning(f"Failed to read CSV with {encoding}: {e}")
+                continue
+        
+        if df is None:
+            raise RuntimeError("Could not read CSV file with any supported encoding")
+        
+        # Handle files without headers
+        if _appears_headerless(df):
+            df.columns = [f"column_{i+1}" for i in range(len(df.columns))]
+            logging.info("CSV appears to have no headers, generated column names")
+        
+        # Clean column names
+        df.columns = [str(col).strip() for col in df.columns]
+        
+        # Identify text columns intelligently
+        text_columns = _identify_text_columns(df)
+        
+        if not text_columns:
+            # Fallback: extract from all columns if no clear text columns found
+            text_columns = list(df.columns)
+            logging.warning("No clear text columns found, extracting from all columns")
+        
+        # Extract and combine text content
+        extracted_text = _extract_and_combine_text(df, text_columns)
+        
+        if not extracted_text.strip():
+            raise RuntimeError("No meaningful text content found in CSV file")
+        
+        # Add metadata header for context
+        metadata = f"[CSV DATA EXTRACT]\n"
+        metadata += f"Source: {path}\n"
+        metadata += f"Encoding: {used_encoding}\n"
+        metadata += f"Rows: {len(df):,} | Text Columns: {len(text_columns)}\n"
+        metadata += f"Columns used: {', '.join(text_columns[:5])}{'...' if len(text_columns) > 5 else ''}\n"
+        metadata += f"[END METADATA]\n\n"
+        
+        final_text = metadata + extracted_text
+        
+        logging.info(f"CSV extraction successful: {len(df)} rows, {len(text_columns)} text columns, {len(final_text)} characters extracted")
+        
+        return final_text
+        
+    except FileNotFoundError:
+        raise RuntimeError(f"CSV file not found: {path}")
+    except pd.errors.EmptyDataError:
+        raise RuntimeError("CSV file is empty or contains no data")
+    except Exception as e:
+        if isinstance(e, RuntimeError):
+            raise  # Re-raise our custom errors
+        else:
+            raise RuntimeError(f"CSV extraction failed: {str(e)}")
+
+# ========================================
+# DOCX Helper Functions
+# ========================================
 
 def _extract_table_text(table):
     """
@@ -259,3 +378,259 @@ def _validate_docx_health(path):
         health_info["warnings"].append(f"Health check failed: {str(e)}")
     
     return health_info
+
+# ========================================
+# CSV Helper Functions
+# ========================================
+
+def _analyze_csv_file(path: str) -> Dict[str, Any]:
+    """
+    Analyze CSV file to estimate size and complexity
+    
+    Args:
+        path (str): Path to CSV file
+        
+    Returns:
+        dict: File analysis information
+    """
+    analysis = {
+        'file_size_mb': 0,
+        'estimated_rows': 0,
+        'sample_lines': [],
+        'delimiter_hints': []
+    }
+    
+    try:
+        # Get file size
+        file_size = os.path.getsize(path)
+        analysis['file_size_mb'] = file_size / (1024 * 1024)
+        
+        # Sample first few lines to estimate row count and structure
+        with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+            sample_lines = []
+            for i, line in enumerate(f):
+                if i < 10:  # Sample first 10 lines
+                    sample_lines.append(line.strip())
+                if i >= 100:  # Count first 100 lines for estimation
+                    break
+            
+            # Estimate total rows based on average line length
+            if sample_lines:
+                avg_line_length = sum(len(line.encode('utf-8')) for line in sample_lines[:5]) / min(5, len(sample_lines))
+                if avg_line_length > 0:
+                    analysis['estimated_rows'] = int(file_size / avg_line_length)
+                else:
+                    analysis['estimated_rows'] = 1000  # Conservative estimate
+            
+            analysis['sample_lines'] = sample_lines
+            
+    except Exception as e:
+        logging.warning(f"Could not analyze CSV file: {e}")
+        analysis['estimated_rows'] = 10000  # Conservative high estimate
+    
+    return analysis
+
+def _detect_csv_delimiter(path: str, encoding: str = 'utf-8') -> str:
+    """
+    Detect CSV delimiter by analyzing file content
+    
+    Args:
+        path (str): Path to CSV file
+        encoding (str): File encoding to use
+        
+    Returns:
+        str: Detected delimiter
+    """
+    delimiters = [',', ';', '\t', '|']
+    
+    try:
+        with open(path, 'r', encoding=encoding) as f:
+            # Read first few lines for analysis
+            sample = ''
+            for i, line in enumerate(f):
+                if i < 5:  # Analyze first 5 lines
+                    sample += line
+                else:
+                    break
+        
+        # Use csv.Sniffer to detect delimiter
+        sniffer = csv.Sniffer()
+        try:
+            dialect = sniffer.sniff(sample, delimiters=delimiters)
+            return dialect.delimiter
+        except csv.Error:
+            # Fallback: count occurrences of each delimiter
+            delimiter_counts = {delim: sample.count(delim) for delim in delimiters}
+            return max(delimiter_counts, key=delimiter_counts.get)
+            
+    except Exception as e:
+        logging.warning(f"Could not detect delimiter: {e}, using comma as default")
+        return ','
+
+def _appears_headerless(df: pd.DataFrame) -> bool:
+    """
+    Determine if CSV appears to lack proper headers
+    
+    Args:
+        df (pd.DataFrame): DataFrame to analyze
+        
+    Returns:
+        bool: True if CSV appears headerless
+    """
+    if len(df) == 0:
+        return False
+    
+    # Check if first row data types match column names
+    first_row = df.iloc[0] if len(df) > 0 else pd.Series()
+    
+    # If column names are generic (Unnamed, numeric patterns)
+    generic_patterns = ['unnamed', 'column', r'^\d+$']
+    has_generic_names = any(
+        any(re.search(pattern, str(col).lower()) for pattern in generic_patterns)
+        for col in df.columns
+    )
+    
+    # If first row contains data similar to other rows (all numeric or mixed types)
+    if len(df) > 1:
+        first_row_types = [type(val).__name__ for val in first_row]
+        second_row_types = [type(val).__name__ for val in df.iloc[1]]
+        similar_types = sum(1 for t1, t2 in zip(first_row_types, second_row_types) if t1 == t2)
+        similarity_ratio = similar_types / len(first_row_types) if first_row_types else 0
+        
+        return has_generic_names or similarity_ratio > 0.7
+    
+    return has_generic_names
+
+def _identify_text_columns(df: pd.DataFrame) -> List[str]:
+    """
+    Intelligently identify columns containing text content suitable for training
+    
+    Args:
+        df (pd.DataFrame): DataFrame to analyze
+        
+    Returns:
+        List[str]: List of column names containing text content
+    """
+    text_columns = []
+    
+    for col in df.columns:
+        try:
+            # Get non-null values for analysis
+            non_null_values = df[col].dropna()
+            
+            if len(non_null_values) == 0:
+                continue
+            
+            # Convert to string for analysis
+            str_values = non_null_values.astype(str)
+            
+            # Calculate text characteristics
+            avg_length = str_values.str.len().mean()
+            has_letters = str_values.str.contains(r'[a-zA-Z]', na=False).sum()
+            has_spaces = str_values.str.contains(r'\s', na=False).sum()
+            has_multiple_words = str_values.str.contains(r'\s+\w+', na=False).sum()
+            
+            # Ratios for classification
+            letter_ratio = has_letters / len(str_values) if len(str_values) > 0 else 0
+            space_ratio = has_spaces / len(str_values) if len(str_values) > 0 else 0
+            multi_word_ratio = has_multiple_words / len(str_values) if len(str_values) > 0 else 0
+            
+            # Check if column contains URLs, emails, or structured text
+            has_urls = str_values.str.contains(r'https?://', na=False).any()
+            has_emails = str_values.str.contains(r'@.*\.', na=False).any()
+            
+            # Classification logic
+            is_text_column = (
+                # Has reasonable average length (more than just codes/IDs)
+                avg_length >= 10 and
+                # Contains letters (not just numbers)
+                letter_ratio >= 0.5 and
+                # Either has spaces/multiple words OR is structured text (URLs/emails)
+                (space_ratio >= 0.3 or multi_word_ratio >= 0.2 or has_urls or has_emails)
+            )
+            
+            # Special cases: include columns with obvious text indicators
+            text_indicators = ['description', 'text', 'content', 'comment', 'note', 
+                             'message', 'title', 'name', 'summary', 'review']
+            
+            if any(indicator in col.lower() for indicator in text_indicators):
+                is_text_column = True
+            
+            # Exclude obvious non-text columns
+            exclude_indicators = ['id', 'date', 'time', 'count', 'number', 'amount', 
+                                'price', 'cost', 'total', 'sum', 'avg', 'max', 'min']
+            
+            if any(indicator in col.lower() for indicator in exclude_indicators):
+                # Double-check with content analysis
+                if avg_length < 5 or letter_ratio < 0.3:
+                    is_text_column = False
+            
+            if is_text_column:
+                text_columns.append(col)
+                logging.info(f"Identified text column: {col} (avg_len={avg_length:.1f}, letters={letter_ratio:.2f})")
+            
+        except Exception as e:
+            logging.warning(f"Error analyzing column {col}: {e}")
+            continue
+    
+    return text_columns
+
+def _extract_and_combine_text(df: pd.DataFrame, text_columns: List[str]) -> str:
+    """
+    Extract and intelligently combine text content from identified columns
+    
+    Args:
+        df (pd.DataFrame): DataFrame containing the data
+        text_columns (List[str]): List of columns to extract text from
+        
+    Returns:
+        str: Combined text content
+    """
+    extracted_content = []
+    
+    for index, row in df.iterrows():
+        row_texts = []
+        
+        for col in text_columns:
+            try:
+                value = row[col]
+                
+                # Skip null/empty values
+                if pd.isna(value) or value == '':
+                    continue
+                
+                # Convert to string and clean
+                text = str(value).strip()
+                
+                # Skip very short or obviously non-textual content
+                if len(text) < 3:
+                    continue
+                
+                # Skip if it's just numbers or basic patterns
+                if re.match(r'^[\d\.\-\+\s]*$', text):
+                    continue
+                
+                # Add column context for multi-column rows
+                if len(text_columns) > 1 and len(text) > 10:
+                    # Only add column name if text is substantial
+                    row_texts.append(f"{col}: {text}")
+                else:
+                    row_texts.append(text)
+                    
+            except Exception as e:
+                logging.warning(f"Error extracting text from row {index}, column {col}: {e}")
+                continue
+        
+        # Combine row texts
+        if row_texts:
+            if len(row_texts) == 1:
+                # Single column: just use the text
+                combined_row = row_texts[0]
+            else:
+                # Multiple columns: combine with separators
+                combined_row = " | ".join(row_texts)
+            
+            extracted_content.append(combined_row)
+    
+    # Join all content with double newlines for clear separation
+    return "\n\n".join(extracted_content)

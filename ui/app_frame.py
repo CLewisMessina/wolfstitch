@@ -760,9 +760,3 @@ class AppFrame(Frame):
             messagebox.showerror("Load Error", f"Failed to load session: {str(e)}")
 
 
-print("🎉 DOCX SUPPORT INTEGRATED - Enhanced File Processing")
-print(f"📊 Changes: DOCX support added to existing app_frame.py")
-print(f"🎯 Final size: ~675 lines (within guidelines)")
-print(f"🔧 Features: Word document processing, enhanced error handling, format detection")
-print(f"✅ Now supports: TXT, PDF, EPUB, and DOCX files!")
-print(f"🚀 DOCX INTEGRATION SUCCESS: Ready for testing")

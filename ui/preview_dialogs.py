@@ -388,11 +388,6 @@ Thank you for supporting Wolfscribe Premium! 🎉"""
         except Exception as e:
             messagebox.showerror("Trial Error", f"Failed to start trial: {str(e)}")
 
-# =============================================================================
-# STAGE 2 COMPLETE: Preview & Dialog System Extracted
-# Moved ~400 lines from app_frame.py to ui/preview_dialogs.py
-# =============================================================================
 
-print("✅ STAGE 2.1 COMPLETE - Preview & Dialog System Created")
-print(f"📊 Created ui/preview_dialogs.py with ~400 lines")
-print(f"🎯 Ready for Stage 2.2: Update app_frame.py delegation")
+
+

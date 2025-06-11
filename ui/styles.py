@@ -59,6 +59,13 @@ def apply_modern_slate_theme(style: Style):
         padding=(15, 12)
     )
     
+    # Cost Analysis Header Background bug fix
+    style.configure("Primary.TLabel",
+    background=MODERN_SLATE['bg_primary'],    # same dark background as cards
+    foreground=MODERN_SLATE['accent_blue'],   # use the accent blue for contrast
+    font=("Segoe UI", 10, "bold")
+    )
+
     # ==================== TEXT STYLES ====================
     
     # Primary text (headings) - Use card background for section headers

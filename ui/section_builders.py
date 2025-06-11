@@ -1,4 +1,4 @@
-# ui/section_builders.py - Stage 3: UI Section Builder Extraction
+# ui/section_builders.py 
 """
 UI Section Builders for Wolfscribe Premium
 Extracted from app_frame.py to reduce complexity and improve maintainability

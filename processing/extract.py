@@ -143,113 +143,6 @@ def load_docx(path):
         else:
             raise RuntimeError(f"DOCX extraction failed: {str(e)}")
 
-def load_csv(path: str, max_lines: int = 500) -> str:
-    """
-    Load and intelligently extract text content from CSV files
-    
-    Extracts trainable text content by:
-    - Detecting text vs numeric columns automatically
-    - Handling different CSV formats (comma, semicolon, tab-separated)
-    - Combining multi-column text appropriately
-    - Ignoring purely numeric/date columns
-    - Handling encoding issues and missing headers
-    
-    Args:
-        path (str): Path to the CSV file
-        max_lines (int): Maximum lines to process (default 500 for small files)
-        
-    Returns:
-        str: Extracted text content suitable for AI training
-        
-    Raises:
-        RuntimeError: If CSV processing fails or file is too large
-    """
-    try:
-        # First, perform file size and content analysis
-        file_info = _analyze_csv_file(path)
-        
-        # Check if file is too large and needs splitting
-        if file_info['estimated_rows'] > max_lines:
-            raise RuntimeError(
-                f"CSV file is too large ({file_info['estimated_rows']:,} rows). "
-                f"This exceeds the {max_lines} line limit for efficient processing. "
-                f"Please split the file into smaller chunks or contact support for batch processing options."
-            )
-        
-        # Try multiple encoding strategies
-        encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
-        df = None
-        used_encoding = None
-        
-        for encoding in encodings:
-            try:
-                # Detect delimiter and read CSV
-                delimiter = _detect_csv_delimiter(path, encoding)
-                df = pd.read_csv(
-                    path, 
-                    encoding=encoding,
-                    delimiter=delimiter,
-                    low_memory=False,
-                    na_values=['', 'N/A', 'NULL', 'null', 'None'],
-                    keep_default_na=True,
-                    dtype=str  # Read everything as string initially
-                )
-                used_encoding = encoding
-                logging.info(f"Successfully read CSV with {encoding} encoding using '{delimiter}' delimiter")
-                break
-            except (UnicodeDecodeError, pd.errors.ParserError) as e:
-                logging.warning(f"Failed to read CSV with {encoding}: {e}")
-                continue
-        
-        if df is None:
-            raise RuntimeError("Could not read CSV file with any supported encoding")
-        
-        # Handle files without headers
-        if _appears_headerless(df):
-            df.columns = [f"column_{i+1}" for i in range(len(df.columns))]
-            logging.info("CSV appears to have no headers, generated column names")
-        
-        # Clean column names
-        df.columns = [str(col).strip() for col in df.columns]
-        
-        # Identify text columns intelligently
-        text_columns = _identify_text_columns(df)
-        
-        if not text_columns:
-            # Fallback: extract from all columns if no clear text columns found
-            text_columns = list(df.columns)
-            logging.warning("No clear text columns found, extracting from all columns")
-        
-        # Extract and combine text content
-        extracted_text = _extract_and_combine_text(df, text_columns)
-        
-        if not extracted_text.strip():
-            raise RuntimeError("No meaningful text content found in CSV file")
-        
-        # Add metadata header for context
-        metadata = f"[CSV DATA EXTRACT]\n"
-        metadata += f"Source: {path}\n"
-        metadata += f"Encoding: {used_encoding}\n"
-        metadata += f"Rows: {len(df):,} | Text Columns: {len(text_columns)}\n"
-        metadata += f"Columns used: {', '.join(text_columns[:5])}{'...' if len(text_columns) > 5 else ''}\n"
-        metadata += f"[END METADATA]\n\n"
-        
-        final_text = metadata + extracted_text
-        
-        logging.info(f"CSV extraction successful: {len(df)} rows, {len(text_columns)} text columns, {len(final_text)} characters extracted")
-        
-        return final_text
-        
-    except FileNotFoundError:
-        raise RuntimeError(f"CSV file not found: {path}")
-    except pd.errors.EmptyDataError:
-        raise RuntimeError("CSV file is empty or contains no data")
-    except Exception as e:
-        if isinstance(e, RuntimeError):
-            raise  # Re-raise our custom errors
-        else:
-            raise RuntimeError(f"CSV extraction failed: {str(e)}")
-
 # ========================================
 # DOCX Helper Functions
 # ========================================
@@ -379,6 +272,7 @@ def _validate_docx_health(path):
     
     return health_info
 
+
 # ========================================
 # CSV Helper Functions
 # ========================================
@@ -430,6 +324,32 @@ def _analyze_csv_file(path: str) -> Dict[str, Any]:
     
     return analysis
 
+def _check_special_csv_format(path: str) -> Dict[str, Any]:
+    """
+    Check for special CSV formats like Excel CSV with sep= declaration
+    """
+    special_params = {}
+    
+    try:
+        with open(path, 'rb') as f:
+            # Check for BOM
+            first_bytes = f.read(3)
+            f.seek(0)
+            
+            # Check first line for sep= declaration
+            first_line = f.readline().decode('utf-8', errors='ignore').strip()
+            
+            if first_line.startswith('sep='):
+                # Excel CSV with separator declaration
+                sep_char = first_line[4:].strip()
+                special_params['delimiter'] = sep_char
+                special_params['skip_rows'] = 1  # Skip the sep= line
+                logging.info(f"Detected Excel CSV with separator: {repr(sep_char)}")
+    except Exception as e:
+        logging.debug(f"Special format check error: {e}")
+    
+    return special_params
+
 def _detect_csv_delimiter(path: str, encoding: str = 'utf-8') -> str:
     """
     Detect CSV delimiter by analyzing file content
@@ -466,6 +386,27 @@ def _detect_csv_delimiter(path: str, encoding: str = 'utf-8') -> str:
     except Exception as e:
         logging.warning(f"Could not detect delimiter: {e}, using comma as default")
         return ','
+
+def _validate_csv_parsing(df: pd.DataFrame, delimiter: str) -> bool:
+    """
+    Validate that CSV was parsed correctly
+    """
+    # Check if we have multiple columns
+    if len(df.columns) == 1 and delimiter in [',', ';', '\t', '|']:
+        # Check if the single column contains the delimiter
+        if len(df) > 0:
+            first_val = str(df.iloc[0, 0])
+            if delimiter in first_val:
+                logging.warning("CSV appears to be incorrectly parsed into single column")
+                return False
+    
+    # Check for suspicious column names that might indicate bad parsing
+    col_str = ' '.join(str(c) for c in df.columns)
+    if delimiter in col_str and len(df.columns) < 3:
+        logging.warning("Column names contain delimiter, possible parsing issue")
+        return False
+    
+    return True
 
 def _appears_headerless(df: pd.DataFrame) -> bool:
     """
@@ -634,3 +575,244 @@ def _extract_and_combine_text(df: pd.DataFrame, text_columns: List[str]) -> str:
     
     # Join all content with double newlines for clear separation
     return "\n\n".join(extracted_content)
+
+def _fallback_csv_reader(path: str) -> str:
+    """
+    Fallback CSV reader using Python's csv module when pandas fails
+    """
+    import csv
+    
+    logging.info("Using fallback CSV reader")
+    
+    try:
+        extracted_lines = []
+        
+        with open(path, 'r', encoding='utf-8', errors='replace') as f:
+            # Try to detect dialect
+            sample = f.read(8192)
+            f.seek(0)
+            
+            try:
+                dialect = csv.Sniffer().sniff(sample)
+            except:
+                # Default to excel dialect
+                dialect = csv.excel()
+            
+            reader = csv.reader(f, dialect=dialect)
+            
+            # Process header
+            try:
+                header = next(reader)
+                logging.info(f"CSV headers: {header}")
+            except StopIteration:
+                raise RuntimeError("Empty CSV file")
+            
+            # Find text columns by sampling
+            text_cols = []
+            sample_rows = []
+            
+            for i, row in enumerate(reader):
+                if i < 10:  # Sample first 10 rows
+                    sample_rows.append(row)
+                else:
+                    break
+            
+            # Identify text columns
+            for col_idx in range(min(len(header), len(sample_rows[0]) if sample_rows else 0)):
+                col_values = [row[col_idx] for row in sample_rows if col_idx < len(row)]
+                
+                # Check if column has text content
+                has_text = any(
+                    len(val) > 5 and any(c.isalpha() for c in val) 
+                    for val in col_values if val
+                )
+                
+                if has_text:
+                    text_cols.append(col_idx)
+            
+            if not text_cols:
+                # Use all columns
+                text_cols = list(range(len(header)))
+            
+            # Extract text from identified columns
+            f.seek(0)
+            reader = csv.reader(f, dialect=dialect)
+            next(reader)  # Skip header
+            
+            for row in reader:
+                row_text = []
+                for col_idx in text_cols:
+                    if col_idx < len(row) and row[col_idx].strip():
+                        text = row[col_idx].strip()
+                        if len(text) > 3:  # Meaningful text
+                            if col_idx < len(header):
+                                row_text.append(f"{header[col_idx]}: {text}")
+                            else:
+                                row_text.append(text)
+                
+                if row_text:
+                    extracted_lines.append(" | ".join(row_text))
+        
+        if not extracted_lines:
+            raise RuntimeError("No text content extracted from CSV")
+        
+        # Create output
+        metadata = f"[CSV DATA EXTRACT - Fallback Mode]\n"
+        metadata += f"Source: {path}\n"
+        metadata += f"Text columns found: {len(text_cols)}\n"
+        metadata += f"[END METADATA]\n\n"
+        
+        return metadata + "\n\n".join(extracted_lines)
+        
+    except Exception as e:
+        logging.error(f"Fallback reader failed: {e}")
+        raise RuntimeError(f"Could not read CSV file: {str(e)}")
+
+def load_csv(path: str, max_lines: int = 500) -> str:
+    """
+    Load and intelligently extract text content from CSV files - ROBUST VERSION
+    
+    This version handles edge cases like:
+    - Files with BOM (Byte Order Mark)
+    - Excel CSV files with sep= declarations
+    - Unusual quoting
+    - Mixed delimiters
+    """
+    try:
+        # First, perform file size and content analysis
+        file_info = _analyze_csv_file(path)
+        
+        # Check if file is too large and needs splitting
+        if file_info['estimated_rows'] > max_lines:
+            raise RuntimeError(
+                f"CSV file is too large ({file_info['estimated_rows']:,} rows). "
+                f"This exceeds the {max_lines} line limit for efficient processing. "
+                f"Please split the file into smaller chunks or contact support for batch processing options."
+            )
+        
+        # Check for special CSV formats
+        special_params = _check_special_csv_format(path)
+        
+        # Try multiple encoding strategies
+        encodings = ['utf-8', 'utf-8-sig', 'latin-1', 'cp1252', 'iso-8859-1']  # Added utf-8-sig for BOM
+        df = None
+        used_encoding = None
+        delimiter = special_params.get('delimiter', None)
+        
+        for encoding in encodings:
+            try:
+                # Detect delimiter if not already specified
+                if delimiter is None:
+                    delimiter = _detect_csv_delimiter(path, encoding)
+                
+                logging.info(f"Attempting to read CSV with encoding '{encoding}' and delimiter '{delimiter}'")
+                
+                # Read CSV with robust parameters
+                read_params = {
+                    'filepath_or_buffer': path,
+                    'encoding': encoding,
+                    'delimiter': delimiter,
+                    'engine': 'python',
+                    'quoting': csv.QUOTE_NONE,
+                    'na_values': ['', 'N/A', 'NULL', 'null', 'None'],
+                    'keep_default_na': True,
+                    'skipinitialspace': True,
+                    'thousands': None,
+                    'decimal': '.'
+                }
+                
+                # Add quoting parameters based on detection
+                if special_params.get('quoting'):
+                    read_params['quoting'] = special_params['quoting']
+                else:
+                    read_params['quotechar'] = '"'
+                    read_params['doublequote'] = True
+                    read_params['escapechar'] = None
+                
+                # Skip sep= line if present
+                if special_params.get('skip_rows'):
+                    read_params['skiprows'] = special_params['skip_rows']
+                
+                df = pd.read_csv(**read_params)
+                
+                # Validate the parsing
+                if not _validate_csv_parsing(df, delimiter):
+                    raise pd.errors.ParserError("Invalid parsing detected")
+                
+                used_encoding = encoding
+                logging.info(f"Successfully read CSV: shape={df.shape}, columns={list(df.columns)}")
+                break
+                
+            except (UnicodeDecodeError, pd.errors.ParserError) as e:
+                logging.warning(f"Failed with {encoding}: {e}")
+                # Reset delimiter for next attempt
+                if not special_params.get('delimiter'):
+                    delimiter = None
+                continue
+        
+        if df is None:
+            # Last resort: try with python's csv module
+            logging.info("Pandas failed, trying basic CSV reader")
+            return _fallback_csv_reader(path)
+        
+        # Handle files without headers
+        if _appears_headerless(df):
+            logging.info("CSV appears headerless, re-reading without header row...")
+            read_params['header'] = None
+            df = pd.read_csv(**read_params)
+            df.columns = [f"column_{i+1}" for i in range(len(df.columns))]
+            logging.info(f"Generated column names: {list(df.columns)}")
+        
+        # Clean column names
+        df.columns = [str(col).strip() for col in df.columns]
+        
+        # Identify text columns intelligently
+        text_columns = _identify_text_columns(df)
+        logging.info(f"Identified {len(text_columns)} text columns: {text_columns}")
+        
+        if not text_columns:
+            # If no text columns found, check if we have at least some string data
+            all_numeric = True
+            for col in df.columns:
+                if df[col].dtype == object or df[col].astype(str).str.contains('[a-zA-Z]', na=False).any():
+                    all_numeric = False
+                    break
+            
+            if all_numeric:
+                raise RuntimeError("CSV contains only numeric data, no text content to extract")
+            else:
+                # Use all columns as fallback
+                text_columns = list(df.columns)
+                logging.warning("No clear text columns identified, using all columns")
+        
+        # Extract and combine text content
+        extracted_text = _extract_and_combine_text(df, text_columns)
+        
+        if not extracted_text.strip():
+            raise RuntimeError("No meaningful text content found in CSV file")
+        
+        # Add metadata header for context
+        metadata = f"[CSV DATA EXTRACT]\n"
+        metadata += f"Source: {path}\n"
+        metadata += f"Encoding: {used_encoding}\n"
+        metadata += f"Delimiter: {repr(delimiter)}\n"
+        metadata += f"Rows: {len(df):,} | Columns: {len(df.columns)} | Text Columns: {len(text_columns)}\n"
+        metadata += f"Columns used: {', '.join(text_columns[:5])}{'...' if len(text_columns) > 5 else ''}\n"
+        metadata += f"[END METADATA]\n\n"
+        
+        final_text = metadata + extracted_text
+        
+        logging.info(f"CSV extraction complete: {len(final_text)} characters extracted")
+        
+        return final_text
+        
+    except FileNotFoundError:
+        raise RuntimeError(f"CSV file not found: {path}")
+    except pd.errors.EmptyDataError:
+        raise RuntimeError("CSV file is empty or contains no data")
+    except Exception as e:
+        if isinstance(e, RuntimeError):
+            raise
+        else:
+            logging.error(f"Unexpected error: {type(e).__name__}: {e}")
+            raise RuntimeError(f"CSV extraction failed: {str(e)}")

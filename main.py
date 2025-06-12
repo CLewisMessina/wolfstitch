@@ -21,8 +21,8 @@ def main():
     style.master = root
 
     # Configure main window with modern styling
-    root.title("Wolfscribe Premium - AI Training Cost Optimizer")
-    root.geometry("750x600")  # Slightly larger for better visual breathing room
+    root.title("Wolfscribe - Dataset Generator")
+    root.geometry("750x600")
     root.minsize(750, 600)
     
     # Set modern dark background

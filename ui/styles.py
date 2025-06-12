@@ -339,6 +339,58 @@ def apply_modern_slate_theme(style: Style):
         padding=(8, 4)
     )
 
+    # ==================== RADIOBUTTON AND CHECKBUTTON STYLES ====================
+    
+    # Modern TTK Radiobuttons
+    style.configure("Modern.TRadiobutton",
+        background=MODERN_SLATE['bg_cards'],
+        foreground=MODERN_SLATE['text_primary'],
+        focuscolor=MODERN_SLATE['accent_blue'],
+        borderwidth=0,
+        font=("Segoe UI", 10, "bold")
+    )
+    
+    style.map("Modern.TRadiobutton",
+        background=[
+            ("active", MODERN_SLATE['bg_hover']),
+            ("pressed", MODERN_SLATE['bg_hover'])
+        ],
+        foreground=[
+            ("active", MODERN_SLATE['text_primary']),
+            ("disabled", MODERN_SLATE['text_muted'])
+        ],
+        indicatorcolor=[
+            ("selected", MODERN_SLATE['accent_blue']),
+            ("pressed", MODERN_SLATE['accent_cyan']),
+            ("active", MODERN_SLATE['accent_blue'])
+        ]
+    )
+    
+    # Modern TTK Checkbuttons
+    style.configure("Modern.TCheckbutton",
+        background=MODERN_SLATE['bg_cards'],
+        foreground=MODERN_SLATE['text_primary'],
+        focuscolor=MODERN_SLATE['accent_blue'],
+        borderwidth=0,
+        font=("Segoe UI", 10)
+    )
+    
+    style.map("Modern.TCheckbutton",
+        background=[
+            ("active", MODERN_SLATE['bg_hover']),
+            ("pressed", MODERN_SLATE['bg_hover'])
+        ],
+        foreground=[
+            ("active", MODERN_SLATE['text_primary']),
+            ("disabled", MODERN_SLATE['text_muted'])
+        ],
+        indicatorcolor=[
+            ("selected", MODERN_SLATE['accent_blue']),
+            ("pressed", MODERN_SLATE['accent_cyan']),
+            ("active", MODERN_SLATE['accent_blue'])
+        ]
+    )
+
 def apply_hover_style(style: Style):
     """Enhanced hover effects for modern slate theme"""
     

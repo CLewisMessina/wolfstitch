@@ -1,8 +1,8 @@
-# ui/cost_dialogs.py - Cost Analysis Dialog System
+# ui/cost_dialogs.py
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from ttkbootstrap import Frame, Label, Button, Entry, Combobox
+from ttkbootstrap import Frame, Label, Button, Entry, Combobox, Radiobutton, Checkbutton
 from ttkbootstrap.constants import *
 import threading
 import time
@@ -558,15 +558,12 @@ Would you like to start your free trial?"""
                 radio_frame = Frame(formats_frame, style="Modern.TFrame")
                 radio_frame.pack(fill=X, pady=2)
                 
-                radio = tk.Radiobutton(radio_frame, 
-                                      text=label,
-                                      variable=export_format,
-                                      value=value,
-                                      bg=MODERN_SLATE['bg_cards'],
-                                      fg=MODERN_SLATE['text_primary'],
-                                      selectcolor=MODERN_SLATE['accent_blue'],
-                                      activebackground=MODERN_SLATE['bg_hover'],
-                                      font=("Segoe UI", 10, "bold"))
+                # Use TTK Radiobutton instead of tk.Radiobutton
+                radio = Radiobutton(radio_frame, 
+                                   text=label,
+                                   variable=export_format,
+                                   value=value,
+                                   style="Modern.TRadiobutton")
                 radio.pack(side=LEFT)
                 
                 Label(radio_frame, text=f" - {description}", 
@@ -584,26 +581,17 @@ Would you like to start your free trial?"""
             include_recommendations = tk.BooleanVar(value=True)
             include_charts = tk.BooleanVar(value=False)
             
-            tk.Checkbutton(options_frame, text="📋 Metadata (timestamp, dataset info)", 
-                          variable=include_metadata,
-                          bg=MODERN_SLATE['bg_cards'],
-                          fg=MODERN_SLATE['text_primary'],
-                          selectcolor=MODERN_SLATE['accent_blue'],
-                          activebackground=MODERN_SLATE['bg_hover']).pack(anchor="w")
+            Checkbutton(options_frame, text="📋 Metadata (timestamp, dataset info)", 
+                       variable=include_metadata,
+                       style="Modern.TCheckbutton").pack(anchor="w")
             
-            tk.Checkbutton(options_frame, text="💡 Optimization recommendations", 
-                          variable=include_recommendations,
-                          bg=MODERN_SLATE['bg_cards'],
-                          fg=MODERN_SLATE['text_primary'],
-                          selectcolor=MODERN_SLATE['accent_blue'],
-                          activebackground=MODERN_SLATE['bg_hover']).pack(anchor="w")
+            Checkbutton(options_frame, text="💡 Optimization recommendations", 
+                       variable=include_recommendations,
+                       style="Modern.TCheckbutton").pack(anchor="w")
             
-            tk.Checkbutton(options_frame, text="📈 Charts and visualizations (Excel only)", 
-                          variable=include_charts,
-                          bg=MODERN_SLATE['bg_cards'],
-                          fg=MODERN_SLATE['text_primary'],
-                          selectcolor=MODERN_SLATE['accent_blue'],
-                          activebackground=MODERN_SLATE['bg_hover']).pack(anchor="w")
+            Checkbutton(options_frame, text="📈 Charts and visualizations (Excel only)", 
+                       variable=include_charts,
+                       style="Modern.TCheckbutton").pack(anchor="w")
             
             # Buttons
             button_frame = Frame(content_frame, style="Modern.TFrame")

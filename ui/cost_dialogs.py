@@ -524,7 +524,7 @@ Would you like to start your free trial?"""
             # Create export options dialog
             export_window = tk.Toplevel(self.parent)
             export_window.title("📊 Export Cost Analysis")
-            export_window.geometry("500x550")
+            export_window.geometry("500x500")
             export_window.transient(self.parent)
             export_window.grab_set()
             export_window.configure(bg=MODERN_SLATE['bg_primary'])

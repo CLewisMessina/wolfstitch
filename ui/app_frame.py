@@ -204,8 +204,7 @@ class AppFrame(Frame):
                 "session_header": self.icon_36("save.png"),
                 "premium_header": self.icon_36("diamond.png"),
             }
-            
-            print("✅ Material Design icons loaded successfully with multiple sizes!")
+
             
         except Exception as e:
             print(f"⚠️ Icon loading failed: {e}")
@@ -281,7 +280,7 @@ class AppFrame(Frame):
         self.preview_dialogs.start_trial()
 
     # =============================================================================
-    # CORE APPLICATION METHODS (Unchanged - existing functionality preserved)
+    # CORE APPLICATION METHODS 
     # =============================================================================
 
     def update_tokenizer_dropdown(self):

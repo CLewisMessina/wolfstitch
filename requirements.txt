@@ -21,6 +21,9 @@ python-docx>=0.8.11
 pandas>=2.0.0
 openpyxl>=3.0.0
 
+# PowerPoint (.pptx/.ppt) support
+python-pptx>=0.6.21       
+
 # Tokenization / Model Compatibility
 transformers>=4.39.3
 

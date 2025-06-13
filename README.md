@@ -3,16 +3,27 @@
 **Transform Your Document Library into Production-Ready AI Training Datasets**  
 *Scalable batch processing for LLM fine-tuning and training data preparation*
 
+## 🎉 Recent Updates
+
+### **v2.5.0 - Code Intelligence Update** (Current)
+- ✅ **Complete Code Support**: Added extraction for 30+ programming languages
+- ✅ **PowerPoint Integration**: Full .pptx/.ppt support with speaker notes
+- ✅ **Smart Quality Control**: Auto-skip minified and auto-generated files  
+- ✅ **Encoding Detection**: Automatic handling of international character sets
+- ✅ **40+ Total Formats**: Most comprehensive format support available
+
 ---
 
 ## 🚀 Overview
 
 Wolfstitch (formerly Wolfscribe) is a professional-grade desktop application that transforms document collections into optimized AI training datasets. Built for AI developers, researchers, and enterprises who need scalable, accurate dataset creation with complete cost transparency.
 
-### ✨ Key Features
+## ✨ Key Features
 
 - **🎯 Batch Processing Pipeline**: Process hundreds of files simultaneously with intelligent queue management
-- **📚 Comprehensive Format Support**: 15+ file formats including documents, presentations, spreadsheets, and code
+- **📚 Comprehensive Format Support**: 40+ file formats including documents, presentations, spreadsheets, and source code
+- **💻 Code Intelligence**: Automatic detection of minified/auto-generated files with quality control
+- **🌍 International Support**: Automatic character encoding detection for global codebases
 - **🧠 Smart Token-Aware Chunking**: Configurable token limits (1024-2048) with exact tokenization
 - **💰 Advanced Cost Analysis**: 15+ training approaches with real-time pricing and ROI calculations
 - **📊 LLM-Ready Output**: Export to JSONL with metadata, optimized for fine-tuning pipelines
@@ -34,13 +45,17 @@ Wolfstitch (formerly Wolfscribe) is a professional-grade desktop application tha
 | **EPUB** | ✅ Complete | E-books | Chapter extraction, metadata |
 | **Plain Text** | ✅ Complete | TXT files | Encoding detection, multi-format |
 
-### **🚧 Code Files (Coming Soon)**
-| Format | Status | Description | Planned Features |
-|--------|--------|-------------|------------------|
-| **Python (.py)** | 🔄 In Progress | Python source code | Preserve indentation, skip minified |
-| **JavaScript (.js)** | 🔄 In Progress | JS/Node.js code | Entropy detection, quality control |
-| **Java (.java)** | 🔄 In Progress | Java source code | Comment preservation, structure |
-| **Config Files** | 🔄 In Progress | YAML, TOML, JSON | Context-aware cleaning |
+### **✅ Source Code & Configuration Files**
+| Format | Status | Description | Key Features |
+|--------|--------|-------------|--------------|
+| **Python (.py)** | ✅ Complete | Python source code | Auto-encoding detection, minification check |
+| **JavaScript (.js/.jsx)** | ✅ Complete | JS/React code | TypeScript support, quality control |
+| **Java (.java)** | ✅ Complete | Java source code | Comment preservation, structure detection |
+| **C/C++ (.c/.cpp/.h)** | ✅ Complete | C/C++ source & headers | Multiple extensions support |
+| **Go (.go)** | ✅ Complete | Go source code | UTF-8 handling, import detection |
+| **Rust (.rs)** | ✅ Complete | Rust source code | Cargo file support ready |
+| **Config Files** | ✅ Complete | YAML, TOML | Structure preservation, comment handling |
+| **30+ Languages** | ✅ Complete | Swift, Kotlin, Ruby, PHP, etc. | Comprehensive language support |
 
 ---
 
@@ -53,12 +68,13 @@ Transform your organization's knowledge base into training data:
 - Training presentations and materials
 - Annual reports and business documents
 
-### **2. Codebase Training (Coming Soon)**
+### **2. Codebase Training**
 Prepare code repositories for AI model training:
-- Internal codebases and libraries
-- Documentation and README files
-- Configuration and infrastructure code
-- Comments and docstrings extraction
+- **Full Language Support**: 30+ programming languages with intelligent extraction
+- **Quality Control**: Automatic detection and skipping of minified/auto-generated files
+- **Encoding Handling**: Automatic character encoding detection for international codebases
+- **Structure Preservation**: Maintains indentation and code structure
+- **Smart Filtering**: Configurable file size limits and quality thresholds
 
 ### **3. Research & Academic**
 Process large document collections for research:
@@ -94,6 +110,9 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Note: If you see an error about chardet, install it separately:
+pip install chardet>=5.0.0
+
 # Launch application
 python main.py
 ```
@@ -121,9 +140,9 @@ python main.py
 ## 🎯 Roadmap
 
 ### **Phase A: Batch Processing Foundation** (Current)
-- [x] PowerPoint (.pptx) format support
-- [ ] Source code file support (.py, .js, .java)
-- [ ] Context-aware cleaning system
+- [x] PowerPoint (.pptx) format support ✅
+- [x] Source code file support (.py, .js, .java, etc.) ✅
+- [ ] Context-aware cleaning system (Day 2)
 - [ ] Multi-file selection UI
 - [ ] Batch processing architecture
 

@@ -1,6 +1,6 @@
-# wolfscribe/processing/extract.py
+# wolfstitch/processing/extract.py
 """
-Refactored file extraction dispatcher for Wolfscribe
+Enhanced file extraction dispatcher for Wolfstitch
 
 This module provides a clean, modular interface for extracting text from various
 file formats. Each format is handled by a dedicated extractor module, making
@@ -17,6 +17,7 @@ Supported formats:
 - XLSX/XLS: Microsoft Excel spreadsheets
 - HTML/HTM: Web pages and HTML documents
 - XML: Extensible markup language documents
+- PPTX/PPT: Microsoft PowerPoint presentations (NEW)
 """
 
 import os
@@ -33,7 +34,8 @@ from processing.extractors import (
     json_extractor,
     xlsx_extractor,
     html_extractor,
-    xml_extractor
+    xml_extractor,
+    pptx_extractor  # NEW: PowerPoint support
 )
 
 # Extension to extractor function mapping
@@ -45,6 +47,10 @@ EXTENSION_LOADERS: Dict[str, Callable[[str], str]] = {
     ".pdf": pdf_extractor.extract_text,
     ".epub": epub_extractor.extract_text,
     ".docx": docx_extractor.extract_text,
+    
+    # Presentation formats (NEW)
+    ".pptx": pptx_extractor.extract_text,
+    ".ppt": pptx_extractor.extract_text,  # Legacy support
     
     # Data formats
     ".csv": csv_extractor.extract_text,
@@ -93,6 +99,7 @@ def load_file(path: str) -> str:
         >>> text = load_file("document.pdf")
         >>> text = load_file("data.csv") 
         >>> text = load_file("readme.md")
+        >>> text = load_file("presentation.pptx")  # NEW
     """
     if not os.path.exists(path):
         raise RuntimeError(f"File not found: {path}")
@@ -103,7 +110,8 @@ def load_file(path: str) -> str:
     # Check if format is supported
     if ext not in EXTENSION_LOADERS:
         supported_formats = ", ".join(sorted(EXTENSION_LOADERS.keys()))
-        raise ValueError(f"Unsupported file type: {ext}. Supported formats: {supported_formats}")
+        raise ValueError(f"Unsupported file type: {ext}. "
+                        f"Supported formats: {supported_formats}")
     
     # Dispatch to appropriate extractor
     try:
@@ -159,6 +167,11 @@ def get_format_info() -> Dict[str, Dict[str, any]]:
             "description": "Document formats",
             "features": ["structured content", "metadata extraction", "formatting preservation"]
         },
+        "presentations": {  # NEW
+            "extensions": [".pptx", ".ppt"],
+            "description": "PowerPoint presentations",
+            "features": ["slide text extraction", "speaker notes", "table content", "error handling"]
+        },
         "data": {
             "extensions": [".csv", ".xlsx", ".xls", ".xlsm"],
             "description": "Spreadsheet and tabular data",
@@ -175,6 +188,46 @@ def get_format_info() -> Dict[str, Dict[str, any]]:
             "features": ["recursive text extraction", "chat format detection", "metadata filtering"]
         }
     }
+
+
+# Enhanced validation function for batch processing
+def validate_file_batch(file_paths: list[str]) -> Dict[str, any]:
+    """
+    Validate a batch of files for processing
+    
+    Args:
+        file_paths (list[str]): List of file paths to validate
+        
+    Returns:
+        Dict[str, any]: Validation results with supported/unsupported files
+    """
+    results = {
+        'supported_files': [],
+        'unsupported_files': [],
+        'missing_files': [],
+        'format_distribution': {},
+        'total_files': len(file_paths)
+    }
+    
+    for file_path in file_paths:
+        if not os.path.exists(file_path):
+            results['missing_files'].append(file_path)
+            continue
+            
+        ext = os.path.splitext(file_path)[1].lower()
+        
+        if ext in EXTENSION_LOADERS:
+            results['supported_files'].append(file_path)
+            # Track format distribution
+            results['format_distribution'][ext] = results['format_distribution'].get(ext, 0) + 1
+        else:
+            results['unsupported_files'].append({
+                'file': file_path,
+                'extension': ext,
+                'reason': f'Unsupported format: {ext}'
+            })
+    
+    return results
 
 
 # Legacy compatibility functions (maintain backward compatibility)
@@ -196,6 +249,11 @@ def load_epub(path: str) -> str:
 def load_docx(path: str) -> str:
     """Legacy compatibility function for DOCX files"""
     return docx_extractor.extract_text(path)
+
+
+def load_pptx(path: str) -> str:  # NEW
+    """Legacy compatibility function for PowerPoint files"""
+    return pptx_extractor.extract_text(path)
 
 
 def load_csv(path: str) -> str:

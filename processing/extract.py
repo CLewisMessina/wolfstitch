@@ -18,6 +18,7 @@ Supported formats:
 - HTML/HTM: Web pages and HTML documents
 - XML: Extensible markup language documents
 - PPTX/PPT: Microsoft PowerPoint presentations (NEW)
+- Code Files: Python, JavaScript, Java, C/C++, and 25+ other languages (NEW)
 """
 
 import os
@@ -35,7 +36,8 @@ from processing.extractors import (
     xlsx_extractor,
     html_extractor,
     xml_extractor,
-    pptx_extractor  # NEW: PowerPoint support
+    pptx_extractor,  
+    code_extractor   # Source code support
 )
 
 # Extension to extractor function mapping
@@ -51,6 +53,39 @@ EXTENSION_LOADERS: Dict[str, Callable[[str], str]] = {
     # Presentation formats (NEW)
     ".pptx": pptx_extractor.extract_text,
     ".ppt": pptx_extractor.extract_text,  # Legacy support
+    
+    # Source code formats (NEW)
+    ".py": code_extractor.extract_text,     # Python
+    ".js": code_extractor.extract_text,     # JavaScript
+    ".jsx": code_extractor.extract_text,    # React JSX
+    ".ts": code_extractor.extract_text,     # TypeScript
+    ".tsx": code_extractor.extract_text,    # React TSX
+    ".java": code_extractor.extract_text,   # Java
+    ".c": code_extractor.extract_text,      # C
+    ".cpp": code_extractor.extract_text,    # C++
+    ".cc": code_extractor.extract_text,     # C++
+    ".cxx": code_extractor.extract_text,    # C++
+    ".h": code_extractor.extract_text,      # C/C++ headers
+    ".hpp": code_extractor.extract_text,    # C++ headers
+    ".cs": code_extractor.extract_text,     # C#
+    ".php": code_extractor.extract_text,    # PHP
+    ".rb": code_extractor.extract_text,     # Ruby
+    ".go": code_extractor.extract_text,     # Go
+    ".rs": code_extractor.extract_text,     # Rust
+    ".swift": code_extractor.extract_text,  # Swift
+    ".kt": code_extractor.extract_text,     # Kotlin
+    ".scala": code_extractor.extract_text,  # Scala
+    ".r": code_extractor.extract_text,      # R
+    ".m": code_extractor.extract_text,      # Objective-C/MATLAB
+    ".pl": code_extractor.extract_text,     # Perl
+    ".sh": code_extractor.extract_text,     # Shell scripts
+    ".bash": code_extractor.extract_text,   # Bash scripts
+    ".ps1": code_extractor.extract_text,    # PowerShell
+    ".lua": code_extractor.extract_text,    # Lua
+    ".dart": code_extractor.extract_text,   # Dart
+    ".toml": code_extractor.extract_text,   # TOML config
+    ".yaml": code_extractor.extract_text,   # YAML config
+    ".yml": code_extractor.extract_text,    # YAML config
     
     # Data formats
     ".csv": csv_extractor.extract_text,
@@ -100,6 +135,7 @@ def load_file(path: str) -> str:
         >>> text = load_file("data.csv") 
         >>> text = load_file("readme.md")
         >>> text = load_file("presentation.pptx")  # NEW
+        >>> text = load_file("script.py")  # NEW
     """
     if not os.path.exists(path):
         raise RuntimeError(f"File not found: {path}")
@@ -171,6 +207,16 @@ def get_format_info() -> Dict[str, Dict[str, any]]:
             "extensions": [".pptx", ".ppt"],
             "description": "PowerPoint presentations",
             "features": ["slide text extraction", "speaker notes", "table content", "error handling"]
+        },
+        "code": {  # NEW
+            "extensions": [".py", ".js", ".java", ".cpp", ".c", ".go", ".rs", ".swift", ".kt"],
+            "description": "Source code files",
+            "features": ["encoding detection", "minification check", "auto-generated detection", "quality control"]
+        },
+        "config": {  # NEW
+            "extensions": [".toml", ".yaml", ".yml"],
+            "description": "Configuration files",
+            "features": ["plain text extraction", "structure preservation", "comment handling"]
         },
         "data": {
             "extensions": [".csv", ".xlsx", ".xls", ".xlsm"],
@@ -256,6 +302,36 @@ def load_pptx(path: str) -> str:  # NEW
     return pptx_extractor.extract_text(path)
 
 
+def load_code(path: str) -> str:  # NEW
+    """Legacy compatibility function for source code files"""
+    return code_extractor.extract_text(path)
+
+
 def load_csv(path: str) -> str:
     """Legacy compatibility function for CSV files"""
     return csv_extractor.extract_text(path)
+
+
+def load_md(path: str) -> str:
+    """Legacy compatibility function for Markdown files"""
+    return md_extractor.extract_text(path)
+
+
+def load_json(path: str) -> str:
+    """Legacy compatibility function for JSON files"""
+    return json_extractor.extract_text(path)
+
+
+def load_xlsx(path: str) -> str:
+    """Legacy compatibility function for Excel files"""
+    return xlsx_extractor.extract_text(path)
+
+
+def load_html(path: str) -> str:
+    """Legacy compatibility function for HTML files"""
+    return html_extractor.extract_text(path)
+
+
+def load_xml(path: str) -> str:
+    """Legacy compatibility function for XML files"""
+    return xml_extractor.extract_text(path)

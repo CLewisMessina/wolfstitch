@@ -27,6 +27,9 @@ python-pptx>=0.6.21
 # Tokenization / Model Compatibility
 transformers>=4.39.3
 
+# Code / Programming language file support
+chardet>=5.0.0
+
 # ===============================
 # ENHANCED COST CALCULATOR
 # ===============================

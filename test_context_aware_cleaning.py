@@ -1,28 +1,12 @@
 #!/usr/bin/env python3
 # test_context_aware_cleaning.py
 """
-FIXED: Comprehensive test suite for the context-aware cleaning system
+COMPLETE FINAL FIXED: Comprehensive test suite for the context-aware cleaning system
 
-This script tests the enhanced cleaning functionality to ensure:
-1. Code files preserve indentation and structure
-2. Document files get proper whitespace normalization  
-3. Data files receive appropriate minimal cleaning
-4. Content type detection works correctly
-5. Backward compatibility is maintained
-
-FIXES APPLIED:
-- Fixed case sensitivity expectations for content type detection
-- Corrected blank line handling expectations for code
-- Fixed document cleaning whitespace normalization test
-- Improved JSON structure preservation in data cleaning
-- Fixed legacy parameter handling tests
+This final version corrects all remaining test issues and includes all functions.
 
 Usage:
     python test_context_aware_cleaning.py
-
-Requirements:
-    - Enhanced processing/clean.py must be in place
-    - Run from project root directory
 """
 
 import sys
@@ -40,7 +24,7 @@ try:
 except ImportError as e:
     print(f"❌ IMPORT ERROR: {e}")
     print("Make sure you're running this from the project root directory")
-    print("and that the enhanced clean.py is in processing/clean.py")
+    print("and that the FINAL enhanced clean.py is in processing/clean.py")
     sys.exit(1)
 
 
@@ -71,8 +55,8 @@ def test_content_type_detection():
         # Edge cases
         (None, 'document'), ('', 'document'), ('.unknown', 'document'),
         # Case sensitivity tests - uppercase should be treated as unknown (document)
-        ('.PYTHON', 'document'),  # Uppercase unknown extension -> document
-        ('.PY', 'document'),      # Uppercase .PY should be document (case sensitive)
+        ('.PYTHON', 'document'),  
+        ('.PY', 'document'),      # CRITICAL: Uppercase .PY should be document (case sensitive)
     ]
     
     passed = 0
@@ -99,7 +83,7 @@ def test_code_cleaning():
     """Test that code cleaning preserves structure"""
     print("🐍 Testing Code Cleaning...")
     
-    # Python code example with controlled blank lines
+    # Python code example with controlled blank lines (exactly 2 double newlines)
     python_code = '''def fibonacci(n):
     """Calculate fibonacci sequence with proper docstring"""
     if n <= 1:
@@ -156,14 +140,14 @@ if __name__ == "__main__":
         print("  ❌ 12-space indentation lost")
         tests.append(False)
     
-    # Test 4: Blank lines properly managed (should be exactly 2 double newlines max)
-    blank_lines = cleaned.count('\n\n')
-    excessive_blanks = cleaned.count('\n\n\n')
-    if blank_lines >= 1 and excessive_blanks == 0:
+    # Test 4: Blank lines properly managed (should have exactly 2 or 3 double newlines, NO triple)
+    double_newlines = cleaned.count('\n\n')
+    triple_newlines = cleaned.count('\n\n\n')
+    if 2 <= double_newlines <= 3 and triple_newlines == 0:
         print("  ✅ Blank lines appropriately managed")
         tests.append(True)
     else:
-        print(f"  ❌ Blank line handling incorrect (found {blank_lines} double, {excessive_blanks} triple)")
+        print(f"  ❌ Blank line handling incorrect (found {double_newlines} double, {triple_newlines} triple)")
         tests.append(False)
     
     # Test 5: Leading/trailing whitespace cleaned
@@ -191,7 +175,7 @@ def test_document_cleaning():
     """Test that document cleaning normalizes whitespace appropriately"""
     print("📄 Testing Document Cleaning...")
     
-    # Document with all the problematic patterns from original clean.py
+    # Document with specific whitespace patterns that should be normalized
     document_text = '''
     *** START OF PROJECT GUTENBERG EBOOK: SAMPLE ***
     
@@ -217,7 +201,7 @@ def test_document_cleaning():
     *** END OF PROJECT GUTENBERG EBOOK ***
     '''
     
-    # Test with original function signature (backward compatibility)
+    # Test with document cleaning function
     cleaned = clean_document_content(document_text)
     
     tests = []
@@ -230,13 +214,17 @@ def test_document_cleaning():
         print("  ❌ Headers/footers not removed")
         tests.append(False)
     
-    # Test 2: Excessive whitespace is normalized
+    # Test 2: Excessive whitespace is normalized (words joined with single spaces)
     if "This is a sample document with excessive whitespace and formatting issues." in cleaned:
         print("  ✅ Excessive whitespace normalized")
         tests.append(True)
     else:
         print("  ❌ Whitespace not properly normalized")
-        print(f"     Found: {repr(cleaned[:200])}")
+        # Show what we actually got for debugging
+        lines = cleaned.split('\n')[:10]  # First 10 lines
+        for i, line in enumerate(lines):
+            if "This" in line or "sample" in line:
+                print(f"     Line {i}: {repr(line)}")
         tests.append(False)
     
     # Test 3: Bullets are removed
@@ -370,12 +358,13 @@ def test_context_aware_cleaning():
         print("  ❌ Code indentation lost via clean_text()")
         tests.append(False)
     
-    # Test 2: Document file cleaning normalizes whitespace and removes bullets
+    # Test 2: Document file cleaning removes bullets completely
     doc_sample = 'This    has    excessive     spacing   and   • bullets'
     doc_result = clean_text(doc_sample, file_extension='.pdf')
     
-    if 'This has excessive spacing and bullets' in doc_result:
-        print("  ✅ Document whitespace normalized via clean_text()")
+    # Should normalize whitespace AND remove bullets
+    if 'This has excessive spacing and bullets' in doc_result and '•' not in doc_result:
+        print("  ✅ Document whitespace normalized and bullets removed via clean_text()")
         tests.append(True)
     else:
         print(f"  ❌ Document cleaning failed via clean_text() - got: {repr(doc_result)}")
@@ -423,7 +412,7 @@ def test_backward_compatibility():
         print("  ❌ Legacy clean_text() call broken")
         tests.append(False)
     
-    # Test 2: Legacy function call with original parameters
+    # Test 2: Legacy function call with original parameters (bullets should be removed)
     legacy_with_params = clean_text(
         'This    has    • bullets    and    spacing',
         remove_headers=True,
@@ -431,20 +420,21 @@ def test_backward_compatibility():
         strip_bullets=True
     )
     
-    if 'This has bullets and spacing' in legacy_with_params:
+    # Should normalize whitespace AND remove bullets
+    if 'This has bullets and spacing' in legacy_with_params and '•' not in legacy_with_params:
         print("  ✅ Legacy parameters work correctly")
         tests.append(True)
     else:
         print(f"  ❌ Legacy parameters broken - got: {repr(legacy_with_params)}")
         tests.append(False)
     
-    # Test 3: Legacy with selective parameters
+    # Test 3: Legacy with selective parameters (bullets should remain when strip_bullets=False)
     no_bullet_strip = clean_text(
         'This    has    • bullets    and    spacing',
         strip_bullets=False
     )
     
-    if '• bullets' in no_bullet_strip or 'bullets' in no_bullet_strip:
+    if '• bullets' in no_bullet_strip:
         print("  ✅ Selective legacy parameters work")
         tests.append(True)
     else:
@@ -500,15 +490,15 @@ def test_edge_cases():
     
     # Test 4: Case sensitivity in extensions (uppercase should default to document)
     upper_case_result = clean_text("def test():\n    pass", file_extension='.PY')
-    # Should default to document since .PY != .py (case sensitive)
+    # Should default to document since .PY != .py (case sensitive), so indentation should be lost
     if '    pass' not in upper_case_result:
         print("  ✅ Extension case sensitivity works correctly")
         tests.append(True)
     else:
         print("  ❌ Extension case sensitivity not working")
+        print(f"     .PY should be treated as document, got: {repr(upper_case_result)}")
         tests.append(False)
     
-
     # Test 5: Very long text handling
     long_text = "line\n" * 10000
     try:
@@ -651,7 +641,7 @@ def main():
     """Run all tests and provide summary"""
     print("🧪 Wolfstitch Context-Aware Cleaning Test Suite")
     print("=" * 60)
-    print("Testing enhanced clean.py implementation...")
+    print("Testing FINAL FIXED enhanced clean.py implementation...")
     print("=" * 60)
     
     # Track all test results
@@ -705,8 +695,8 @@ def main():
 
 
 if __name__ == "__main__":
-    print("Starting Wolfstitch Context-Aware Cleaning Test Suite...")
-    print("Make sure you have replaced processing/clean.py with the enhanced version.\n")
+    print("Starting FINAL FIXED Wolfstitch Context-Aware Cleaning Test Suite...")
+    print("Make sure you have replaced processing/clean.py with the FINAL enhanced version.\n")
     
     success = main()
     
@@ -717,10 +707,11 @@ if __name__ == "__main__":
         print("   1. Update any processing pipeline calls to pass file_extension")
         print("   2. Test with real files from your use cases")
         print("   3. Monitor processing results for quality")
+        print("   4. Proceed to Day 3: Multi-File UI Integration")
     else:
         print("❌ INTEGRATION NOT READY: Fix failing tests first.")
         print("📋 Troubleshooting:")
-        print("   1. Check that enhanced clean.py is properly installed")
+        print("   1. Check that FINAL enhanced clean.py is properly installed")
         print("   2. Verify all imports are working correctly")
         print("   3. Review error messages above for specific issues")
     

@@ -30,7 +30,7 @@ def main():
 
     # Set app icon if available
     try:
-        root.iconphoto(False, tk.PhotoImage(file="assets/wolfscribe-icon.png"))
+        root.iconphoto(False, tk.PhotoImage(file="assets/wolfstitch-icon.png"))
     except:
         pass  # Fallback silently if no icon found
 

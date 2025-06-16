@@ -16,6 +16,7 @@ from ui.styles import MODERN_SLATE
 from ui.cost_dialogs import CostAnalysisDialogs
 from ui.preview_dialogs import PreviewDialogs
 from ui.section_builders import SectionBuilder
+from ui.progressive_loading_dialog import ProgressiveLoadingDialog  # ADD: Progressive loading import
 
 # Removed unused imports from cleanup
 import threading
@@ -43,6 +44,7 @@ class AppFrame(Frame):
         self.chunks = []
         self.session = Session()
         self.current_analysis = None
+        self.progressive_loading = None  # ADD: Progressive loading instance variable
         
         # UI component references (will be set by SectionBuilder)
         self.file_label = None
@@ -66,6 +68,34 @@ class AppFrame(Frame):
         self.update_tokenizer_dropdown()
         self.update_license_status()
         self.update_premium_section()
+        
+        # ADD: Initialize progressive loading after controller is ready
+        self.initialize_progressive_loading()
+
+    # ADD: Progressive loading initialization methods
+    def initialize_progressive_loading(self):
+        """Initialize progressive loading after controller is ready"""
+        if hasattr(self, 'controller') and self.controller:
+            self.progressive_loading = ProgressiveLoadingDialog(self.master, self.controller)
+            # Show loading dialog if there's any loading happening (after brief delay)
+            self.after(1000, self._check_show_loading)
+
+    def _check_show_loading(self):
+        """Check if we should show loading dialog on startup"""
+        if self.progressive_loading and self.controller:
+            try:
+                loading_status = self.controller.get_loading_status()
+                # Show if there's any loading happening
+                has_loading = (
+                    loading_status['premium_features']['loading'] or 
+                    loading_status['tokenizers']['loading_premium_tokenizers'] > 0 or
+                    loading_status['tokenizers']['loading_progress_percent'] < 90
+                )
+                if has_loading:
+                    self.progressive_loading.show_progressive_loading()
+            except Exception:
+                # If there's an error, don't show loading dialog
+                pass
 
     def _setup_canvas(self):
         """Setup scrollable canvas with proper configuration"""
@@ -757,5 +787,3 @@ class AppFrame(Frame):
             
         except Exception as e:
             messagebox.showerror("Load Error", f"Failed to load session: {str(e)}")
-
-

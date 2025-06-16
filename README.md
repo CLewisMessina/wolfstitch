@@ -1,33 +1,51 @@
-# 🐺 Wolfstitch - AI Training Dataset Creator
+# 🧬 Wolfstitch - AI Training Dataset Creator
 
-**Transform Your Document Library into Production-Ready AI Training Datasets**  
-*Scalable batch processing for LLM fine-tuning and training data preparation*
+**Professional-grade dataset creation for AI training with instant startup and progressive premium enhancement**
 
-## 🎉 Recent Updates
-
-### **v2.5.0 - Code Intelligence Update** (Current)
-- ✅ **Complete Code Support**: Added extraction for 30+ programming languages
-- ✅ **PowerPoint Integration**: Full .pptx/.ppt support with speaker notes
-- ✅ **Smart Quality Control**: Auto-skip minified and auto-generated files  
-- ✅ **Encoding Detection**: Automatic handling of international character sets
-- ✅ **40+ Total Formats**: Most comprehensive format support available
-
----
-
-## 🚀 Overview
-
-Wolfstitch (formerly Wolfscribe) is a professional-grade desktop application that transforms document collections into optimized AI training datasets. Built for AI developers, researchers, and enterprises who need scalable, accurate dataset creation with complete cost transparency.
+Wolfstitch transforms documents, code, and text files into optimally-chunked, tokenizer-aware datasets for fine-tuning language models. Built for AI developers, researchers, and enterprises who need scalable, accurate dataset creation with complete cost transparency and **zero-wait startup**.
 
 ## ✨ Key Features
 
-- **🎯 Batch Processing Pipeline**: Process hundreds of files simultaneously with intelligent queue management
+### 🚀 **NEW: Instant Startup with Progressive Enhancement**
+- **⚡ Zero-Wait Launch**: App starts immediately with full core functionality
+- **🔄 Progressive Premium Loading**: Advanced tokenizers and features load in background
+- **📊 Real-Time Loading Progress**: Beautiful loading dialog shows premium feature activation
+- **🛡️ Bulletproof Reliability**: Works perfectly offline, with slow networks, or behind firewalls
+- **🎯 Smart Fallbacks**: Graceful degradation ensures functionality in any environment
+
+### 🎯 **Core Processing Pipeline**
 - **📚 Comprehensive Format Support**: 40+ file formats including documents, presentations, spreadsheets, and source code
+- **🧠 Context-Aware Cleaning**: Preserves code structure while optimizing documents for AI training
 - **💻 Code Intelligence**: Automatic detection of minified/auto-generated files with quality control
 - **🌍 International Support**: Automatic character encoding detection for global codebases
-- **🧠 Smart Token-Aware Chunking**: Configurable token limits (1024-2048) with exact tokenization
-- **💰 Advanced Cost Analysis**: 15+ training approaches with real-time pricing and ROI calculations
-- **📊 LLM-Ready Output**: Export to JSONL with metadata, optimized for fine-tuning pipelines
-- **🛡️ Error Isolation**: Individual file failures don't stop batch processing
+- **🔧 Smart Token-Aware Chunking**: Configurable token limits (512-4096) with exact tokenization
+
+### 💎 **Premium Tokenizer System**
+- **🔄 Hybrid Architecture**: Immediate word-based estimation + background exact tokenizer loading
+- **🎯 5 Professional Tokenizers**: GPT-2, GPT-3.5, GPT-4 (tiktoken), BERT, Sentence Transformers
+- **📈 Progressive Accuracy**: Start with estimates, upgrade to exact counts as tokenizers load
+- **🔒 Access Control**: Premium tokenizers with licensing integration
+- **⚡ Performance Optimized**: Background loading never blocks user workflow
+
+### 💰 **Advanced Cost Analysis**
+- **💡 15+ Training Approaches**: Local, cloud, and hybrid training cost comparison
+- **🔄 Real-Time Pricing**: Live pricing from Lambda Labs, Vast.ai, RunPod, and more
+- **📊 ROI Calculations**: Break-even analysis and cost optimization recommendations
+- **💎 Progressive Enhancement**: Basic estimates immediately, detailed analysis when loaded
+- **📋 Export-Ready Reports**: Comprehensive cost reports in JSON, CSV, and Excel formats
+
+### 🔐 **Professional Licensing System**
+- **🆓 7-Day Free Trial**: Full access to all premium features without credit card
+- **🧑‍💻 Demo Mode**: `WOLFSTITCH_DEMO=true` environment variable for development access
+- **🔑 Secure License Management**: Encrypted key-based authentication system
+- **⏱️ Trial Tracking**: Automatic countdown with upgrade prompts and status indicators
+
+### ✨ **Enhanced User Experience**
+- **🎛️ Smart Tokenizer Selection**: Seamless dropdown with premium indicators and progressive loading
+- **🔍 Enhanced Preview**: Color-coded chunks with efficiency indicators and real-time analytics
+- **📊 Live Analytics**: Instant updates as tokenizers and features become available
+- **💬 Progressive Feedback**: Clear loading states and feature activation notifications
+- **🎯 Status Indicators**: Real-time license status and feature availability display
 
 ---
 
@@ -48,13 +66,13 @@ Wolfstitch (formerly Wolfscribe) is a professional-grade desktop application tha
 ### **✅ Source Code & Configuration Files**
 | Format | Status | Description | Key Features |
 |--------|--------|-------------|--------------|
-| **Python (.py)** | ✅ Complete | Python source code | Auto-encoding detection, minification check |
+| **Python (.py)** | ✅ Complete | Python source code | Auto-encoding detection, structure preservation |
 | **JavaScript (.js/.jsx)** | ✅ Complete | JS/React code | TypeScript support, quality control |
 | **Java (.java)** | ✅ Complete | Java source code | Comment preservation, structure detection |
 | **C/C++ (.c/.cpp/.h)** | ✅ Complete | C/C++ source & headers | Multiple extensions support |
 | **Go (.go)** | ✅ Complete | Go source code | UTF-8 handling, import detection |
 | **Rust (.rs)** | ✅ Complete | Rust source code | Cargo file support ready |
-| **Config Files** | ✅ Complete | YAML, TOML | Structure preservation, comment handling |
+| **Config Files** | ✅ Complete | YAML, TOML, INI | Structure preservation, comment handling |
 | **30+ Languages** | ✅ Complete | Swift, Kotlin, Ruby, PHP, etc. | Comprehensive language support |
 
 ---
@@ -73,7 +91,7 @@ Prepare code repositories for AI model training:
 - **Full Language Support**: 30+ programming languages with intelligent extraction
 - **Quality Control**: Automatic detection and skipping of minified/auto-generated files
 - **Encoding Handling**: Automatic character encoding detection for international codebases
-- **Structure Preservation**: Maintains indentation and code structure
+- **Structure Preservation**: Maintains indentation and code structure with context-aware cleaning
 - **Smart Filtering**: Configurable file size limits and quality thresholds
 
 ### **3. Research & Academic**
@@ -81,7 +99,7 @@ Process large document collections for research:
 - Academic papers and publications
 - Research datasets and corpora
 - Multi-format document libraries
-- Batch processing with metadata
+- Progressive processing with real-time feedback
 
 ---
 
@@ -91,6 +109,7 @@ Process large document collections for research:
 - Python 3.8 or higher
 - 8GB RAM recommended for large batch processing
 - Windows, macOS, or Linux
+- Internet connection for premium features (offline mode available)
 
 ### Quick Start
 ```bash
@@ -117,42 +136,58 @@ pip install chardet>=5.0.0
 python main.py
 ```
 
+### First Launch Experience
+1. **Instant Startup**: App launches immediately with core functionality
+2. **Progressive Loading**: Watch premium tokenizers load in the background
+3. **Immediate Usage**: Start processing files while advanced features activate
+4. **Premium Trial**: Enjoy 7-day free trial with full feature access
+
 ---
 
 ## 💡 Usage Guide
 
-### Single File Processing
+### **Instant Functionality**
+- ✅ **Immediate file processing** with word-based token estimation
+- ✅ **Basic analytics** and chunk analysis available instantly
+- ✅ **Document cleaning** and splitting works immediately
+- ✅ **Export functionality** ready from first launch
+
+### **Progressive Enhancement**
+- 🔄 **Exact tokenizers** load in background (GPT-2, tiktoken, BERT)
+- 🔄 **Premium features** activate automatically as they become available
+- 🔄 **Cost analysis** becomes available with full calculator loading
+- 🔄 **Advanced analytics** enhance as premium features load
+
+### **Single File Processing**
 1. Click "Select File" or drag & drop a supported file
 2. Choose splitting method (paragraph, sentence, or custom)
-3. Configure token limits if needed
+3. Select tokenizer (immediate options available, premium options load progressively)
 4. Click "Process Text" to chunk the document
 5. Preview chunks and export to desired format
 
-### Batch Processing (Coming Soon)
-1. Click "Select Folder" or use multi-file selection
-2. Configure batch processing settings
-3. Monitor progress with real-time updates
-4. Review error log for any failed files
-5. Export complete dataset in JSONL format
+### **Progressive Loading Dialog**
+- 📊 **Real-time progress** for tokenizer and feature loading
+- 🎛️ **Continue in background** option to dismiss dialog anytime
+- ✅ **Auto-completion** notification when all features are ready
+- 🔄 **Status updates** for each premium component
 
 ---
 
 ## 🎯 Roadmap
 
-### **Phase A: Batch Processing Foundation** (Current)
-- [x] PowerPoint (.pptx) format support ✅
-- [x] Source code file support (.py, .js, .java, etc.) ✅
-- [ ] Context-aware cleaning system (Day 2)
-- [ ] Multi-file selection UI
-- [ ] Batch processing architecture
+### **✅ Phase A: Progressive Enhancement Foundation** (Complete)
+- [x] Hybrid tokenizer architecture with instant fallbacks ✅
+- [x] Progressive loading UI with real-time status ✅
+- [x] Context-aware cleaning system ✅
+- [x] Zero-wait startup architecture ✅
 
-### **Phase B: Smart Chunking & Quality**
+### **🔄 Phase B: Batch Processing & Smart Chunking** (In Progress)
+- [ ] Multi-file selection and batch processing
 - [ ] Token-aware intelligent chunking
-- [ ] Content deduplication
-- [ ] Metadata tracking and tagging
-- [ ] Quality scoring system
+- [ ] Content deduplication and quality scoring
+- [ ] Metadata tracking and provenance
 
-### **Phase C: Enhanced Output & Integration**
+### **📋 Phase C: Enhanced Output & Integration** (Planned)
 - [ ] JSONL export with metadata
 - [ ] Batch analytics dashboard
 - [ ] API integration options
@@ -160,21 +195,61 @@ python main.py
 
 ---
 
+## 🏗️ Architecture
+
+### **Hybrid Progressive System**
+```
+┌─────────────────────────────────────────┐
+│             User Interface             │
+├─────────────────────────────────────────┤
+│         Progressive Loading UI         │
+├─────────────────────────────────────────┤
+│      Hybrid Processing Controller      │
+├─────────────────────────────────────────┤
+│    Immediate Fallbacks  │  Premium     │
+│    • Word Estimator     │  • tiktoken  │
+│    • Char Estimator     │  • GPT-2     │
+│    • Basic Analytics    │  • BERT      │
+│                         │  • Cost Calc │
+├─────────────────────────────────────────┤
+│         Core Processing Pipeline        │
+│  Extract → Clean → Split → Analyze     │
+└─────────────────────────────────────────┘
+```
+
+### **Progressive Loading Flow**
+1. **Instant (0ms)**: Core functionality ready
+2. **Background (1-30s)**: Premium tokenizers load
+3. **Enhanced (30s+)**: Full premium features active
+4. **Continuous**: Seamless feature activation
+
+---
+
 ## 🤝 Contributing
 
 Wolfstitch is open source and welcomes contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-### Development Setup
-```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
+### **Key Contribution Areas**
+- **Format Support**: Add support for new file formats
+- **Tokenizer Integration**: Contribute new tokenizer implementations
+- **UI/UX Enhancement**: Improve progressive loading experience
+- **Performance Optimization**: Enhance background loading efficiency
 
-# Run tests
-pytest tests/
+---
 
-# Run linting
-flake8 .
-```
+## 📊 Performance & Reliability
+
+### **Startup Performance**
+- ⚡ **0ms blocking time**: App starts immediately
+- 🔄 **Background loading**: No impact on user workflow
+- 🛡️ **Network resilient**: Works offline and with slow connections
+- 📱 **Resource efficient**: Minimal memory usage during startup
+
+### **Compatibility**
+- 🌐 **Corporate Networks**: Bypasses firewall restrictions
+- 🔌 **Offline Mode**: Full basic functionality without internet
+- 🐌 **Slow Connections**: Progressive enhancement adapts to network speed
+- 🚫 **API Failures**: Graceful fallbacks ensure continuous operation
 
 ---
 
@@ -184,20 +259,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
+## 🎉 **Experience the Future of Dataset Creation**
 
-- Built on the foundation of Wolfscribe
-- Part of the Wolflow ecosystem
-- Special thanks to all contributors
+**Instant startup. Progressive enhancement. Professional results.**
 
----
+Start processing your datasets immediately while premium features activate seamlessly in the background. No waiting, no hanging, no compromises.
 
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/CLewisMessina/wolfstitch/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/CLewisMessina/wolfstitch/discussions)
-- **Email**: support@wolflow.ai
-
----
-
-**Built with ❤️ by the Wolflow Team**
+Ready to revolutionize your AI training workflow? [Download Wolfstitch today!](https://github.com/CLewisMessina/wolfstitch)
